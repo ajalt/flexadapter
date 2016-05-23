@@ -20,14 +20,22 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      *
      * The listener is only applicable if you set up your [RecyclerView] to use the [.getItemTouchHelper]
      */
-    var itemSwipedListener: ItemSwipedListener? = null
+    var itemSwipedListener: ((item: FlexAdapterItem<*>) -> Unit)? = null
+
+    fun setItemSwipedListener(listener: ItemSwipedListener) {
+        itemSwipedListener = { listener.onItemSwiped(it) }
+    }
 
     /**
      * Set or clear a listener that will be notified when an item dragged to a new position.
      *
      * The listener is only applicable if you set up your [RecyclerView] to use the [.getItemTouchHelper]
      */
-    var itemDraggedListener: ItemDraggedListener? = null
+    var itemDraggedListener: ((item: FlexAdapterItem<*>, from: Int, to: Int) -> Unit)? = null
+
+    fun setItemDraggedListener(listener: ItemDraggedListener) {
+        itemDraggedListener = { item, from, to -> listener.onItemDragged(item, from, to) }
+    }
 
     private val items: MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = mutableListOf()
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
@@ -134,7 +142,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     /**
      * An ItemTouchHelper for RecyclerViews.
      *
-     * If any of the items in your RecyclerView might support drag or swipe, you should pass you
+     * If any of the items in your RecyclerView might support drag or swipe, you should pass your
      * RecyclerView to the [ItemTouchHelper.attachToRecyclerView] method of the
      * returned helper.
      */
@@ -161,7 +169,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 }
 
                 moveItem(from, to)
-                itemDraggedListener?.onItemDragged(items[to], from, to)
+                itemDraggedListener?.invoke(items[to], from, to)
                 return true
             }
 
@@ -171,7 +179,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     return
                 }
 
-                itemSwipedListener?.onItemSwiped(items[i])
+                itemSwipedListener?.invoke(items[i])
                 removeItem(i)
             }
         })

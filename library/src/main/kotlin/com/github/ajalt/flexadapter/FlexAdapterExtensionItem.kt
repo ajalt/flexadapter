@@ -12,8 +12,16 @@ import android.view.ViewGroup
  * Definition and creation of the view holder is taken care of, so subclasses just need define a
  * binder function.
  */
-abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int) : FlexAdapterItem<FlexAdapterExtensionItem.ViewHolder>() {
+abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
+                                        val dragDirs: Int = 0,
+                                        val swipeDirs: Int = 0,
+                                        val span: Int = 1) :
+        FlexAdapterItem<FlexAdapterExtensionItem.ViewHolder>() {
     abstract fun bindItemView(itemView: View, position: Int)
+
+    override fun dragDirs(): Int = dragDirs
+    override fun swipeDirs(): Int = swipeDirs
+    override fun span(): Int = span
 
     override fun createViewHolder(): (ViewGroup) -> ViewHolder = {
         ViewHolder(LayoutInflater.from(it.context).inflate(layoutRes, it, false))

@@ -3,7 +3,7 @@ package com.github.ajalt.flexadapter.sample
 import android.os.Bundle
 import android.support.annotation.DrawableRes
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.View
 import com.github.ajalt.flexadapter.FlexAdapter
@@ -16,14 +16,16 @@ val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
 val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
 val ALL_DIRS = HORIZONTAL or VERTICAL
 
-class TextItem(val text: String) : FlexAdapterExtensionItem(R.layout.item_text) {
+class TextItem(var text: String, dragDirs: Int = 0) :
+        FlexAdapterExtensionItem(R.layout.item_text, dragDirs = dragDirs, span = 3) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.text_view.text = text
     }
 }
 
-class PictureItem(@DrawableRes val imageRes: Int) : FlexAdapterExtensionItem(R.layout.item_picture) {
-    override fun dragDirs(): Int = ALL_DIRS
+class WidePictureItem(@DrawableRes val imageRes: Int, val swipe: Boolean = false) :
+        FlexAdapterExtensionItem(R.layout.item_picture, span = 3) {
+    override fun swipeDirs(): Int = if (swipe) HORIZONTAL else 0
 
     override fun bindItemView(itemView: View, position: Int) {
         itemView.image_view.setImageResource(imageRes)
@@ -32,13 +34,31 @@ class PictureItem(@DrawableRes val imageRes: Int) : FlexAdapterExtensionItem(R.l
 
 
 class MainActivity : AppCompatActivity() {
-    val a = FlexAdapter()
+    val adapter = FlexAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        recyclerView.adapter = a
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+        recyclerView.layoutManager = GridLayoutManager(this, 3).apply {
+            spanSizeLookup = adapter.spanSizeLookup
+        }
+        adapter.itemTouchHelper.attachToRecyclerView(recyclerView)
+
+
+        val header1 = TextItem("This Burt is going for a drive")
+        val items = listOf(
+                header1,
+                WidePictureItem(R.drawable.burt_wide_1, swipe = true)
+        )
+
+        adapter.addItems(items)
+        adapter.itemSwipedListener = {
+            if (it == items[1]) {
+                header1.text = "Vroom vroom"
+                adapter.notifyItemChanged(0)
+            }
+        }
     }
 }
