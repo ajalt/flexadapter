@@ -50,7 +50,9 @@ class MainActivity : AppCompatActivity() {
         val header1 = TextItem("This Burt is going for a drive")
         val items = listOf(
                 header1,
-                WidePictureItem(R.drawable.burt_wide_1, swipe = true)
+                WidePictureItem(R.drawable.burt_wide_1, swipe = true),
+                TextItem("This Burt is staying right where he is"),
+                WidePictureItem(R.drawable.burt_wide_2)
         )
 
         adapter.addItems(items)
