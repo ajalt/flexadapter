@@ -34,7 +34,7 @@ android {
 }
 
 dependencies {
-    compile project(':library')
+    compile project(':flexadapter')
 
     compile rootProject.ext.supportV7
     compile rootProject.ext.supportDesign
