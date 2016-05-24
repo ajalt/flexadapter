@@ -71,7 +71,14 @@ class MainActivity : AppCompatActivity() {
                 SquarePictureItem(R.drawable.burt_square_6),
                 SquarePictureItem(R.drawable.burt_square_7),
                 SquarePictureItem(R.drawable.burt_square_8),
-                SquarePictureItem(R.drawable.burt_square_9)
+                SquarePictureItem(R.drawable.burt_square_9),
+                TextItem("Rank your favorite movie stars:"),
+                TextItem("• Burt Reynolds"),
+                TextItem("• Robert Duvall", dragDirs = VERTICAL),
+                TextItem("• Al Pacino", dragDirs = VERTICAL),
+                TextItem("• Robert De Niro", dragDirs = VERTICAL),
+                TextItem("• Harrison Ford", dragDirs = VERTICAL),
+                TextItem("• Jack Nicholson", dragDirs = VERTICAL)
         )
 
         adapter.addItems(items)
