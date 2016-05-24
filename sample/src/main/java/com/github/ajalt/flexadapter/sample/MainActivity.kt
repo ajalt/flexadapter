@@ -2,6 +2,7 @@ package com.github.ajalt.flexadapter.sample
 
 import android.os.Bundle
 import android.support.annotation.DrawableRes
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -45,6 +46,8 @@ class SquarePictureItem(@DrawableRes val imageRes: Int) :
 class MainActivity : AppCompatActivity() {
     val adapter = FlexAdapter()
 
+    var extraBurtsAdded = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -57,12 +60,13 @@ class MainActivity : AppCompatActivity() {
 
 
         val header1 = TextItem("This Burt is going for a drive")
+        val header2 = TextItem("Move these Burts")
         val items = listOf(
                 header1,
                 WidePictureItem(R.drawable.burt_wide_1, swipe = true),
                 TextItem("This Burt is staying right where he is"),
                 WidePictureItem(R.drawable.burt_wide_2),
-                TextItem("Move these Burts"),
+                header2,
                 SquarePictureItem(R.drawable.burt_square_1),
                 SquarePictureItem(R.drawable.burt_square_2),
                 SquarePictureItem(R.drawable.burt_square_3),
@@ -86,6 +90,24 @@ class MainActivity : AppCompatActivity() {
             if (it == items[1]) {
                 header1.text = "Vroom vroom"
                 adapter.notifyItemChanged(0)
+            }
+        }
+
+        val extraBurts = listOf(
+                SquarePictureItem(R.drawable.burt_square_10),
+                SquarePictureItem(R.drawable.burt_square_11),
+                SquarePictureItem(R.drawable.burt_square_12)
+        )
+
+        fab.setOnClickListener {
+            if (extraBurtsAdded >= extraBurts.size) {
+                Snackbar.make(root_layout, "You can't handle any more Burts", Snackbar.LENGTH_SHORT).show()
+            } else {
+                val item = extraBurts[extraBurtsAdded++]
+                adapter.insertItem(adapter.indexOf(header2) + 1, item)
+                Snackbar.make(root_layout, "Here's a Burt", Snackbar.LENGTH_SHORT)
+                        .setAction("undo", { adapter.removeItem(item); extraBurtsAdded-- })
+                        .show()
             }
         }
     }
