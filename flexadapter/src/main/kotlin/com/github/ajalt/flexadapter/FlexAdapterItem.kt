@@ -4,7 +4,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
 
 /**
- * All items in this adapter must be subclasses of this type.
+ * An item that holds data for binding in a [FlexAdapter].
  */
 abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
     /**
@@ -20,6 +20,8 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
     /**
      * Bind the contents of this item to a view holder.
      *
+     * The bound values should be fields on the item instance doing the binding.
+     *
      * @see RecyclerView.Adapter.bindViewHolder
      */
     abstract fun bindViewHolder(holder: VH, position: Int)
@@ -27,7 +29,9 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
     /**
      * Return an integer that uniquely identifies items of this class.
      *
-     * All items of the same class must return the same value.
+     * All items of the same class must return the same value. The default implementation is
+     * suitable in most cases.
+     * 
      * @see RecyclerView.Adapter.getItemViewType
      */
     open fun itemType(): Int = javaClass.hashCode()
