@@ -37,7 +37,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         itemDraggedListener = { item, from, to -> listener.onItemDragged(item, from, to) }
     }
 
-    private val items: MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = mutableListOf()
+    private var items: MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = mutableListOf()
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
 
     /** Remove all items from the adapter */
@@ -49,15 +49,15 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /** Remove all existing items and add the given items */
     fun resetItems(items: List<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
-        this.items.clear()
+        val oldSize = this.items.size
+        this.items = items.toMutableList()
         viewHolderFactoriesByItemType.clear()
 
         if (items.isEmpty()) {
-            notifyItemRangeRemoved(0, itemCount)
+            notifyItemRangeRemoved(0, oldSize)
             return
         }
 
-        this.items.addAll(items)
         for (item in items) recordItemType(item)
         notifyDataSetChanged()
     }
