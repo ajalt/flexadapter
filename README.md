@@ -64,6 +64,14 @@ textItem.text = "Look at this new text"
 adapter.notifyItemChanged(textItem)
 ```
 
+That's it. No managing indices. No casting from interfaces or Object. 
+Just fast, simple code that does exactly what you want.
+
+# Sample project
+
+There is a sample app [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/MainActivity.kt). 
+The entire activity is only about 100 lines of code.
+
 # Download
 
 FlexAdapter is distributed with [JitPack](https://jitpack.io)
