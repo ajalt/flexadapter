@@ -58,13 +58,6 @@ class MainActivity : AppCompatActivity() {
         val header1 = TextItem("Move these Burts")
         val header2 = TextItem("This Burt is going for a drive")
         val items = listOf(
-                TextItem("Rank your favorite movie stars:"),
-                TextItem("• Burt Reynolds"),
-                TextItem("• Robert Duvall", dragDirs = VERTICAL),
-                TextItem("• Al Pacino", dragDirs = VERTICAL),
-                TextItem("• Robert De Niro", dragDirs = VERTICAL),
-                TextItem("• Harrison Ford", dragDirs = VERTICAL),
-                TextItem("• Jack Nicholson", dragDirs = VERTICAL),
                 header1,
                 SquarePictureItem(R.drawable.burt_square_1),
                 SquarePictureItem(R.drawable.burt_square_2),
@@ -75,6 +68,13 @@ class MainActivity : AppCompatActivity() {
                 SquarePictureItem(R.drawable.burt_square_7),
                 SquarePictureItem(R.drawable.burt_square_8),
                 SquarePictureItem(R.drawable.burt_square_9),
+                TextItem("Rank your favorite movie stars:"),
+                TextItem("• Burt Reynolds"),
+                TextItem("• Robert Duvall", dragDirs = VERTICAL),
+                TextItem("• Al Pacino", dragDirs = VERTICAL),
+                TextItem("• Robert De Niro", dragDirs = VERTICAL),
+                TextItem("• Harrison Ford", dragDirs = VERTICAL),
+                TextItem("• Jack Nicholson", dragDirs = VERTICAL),
                 header2,
                 WidePictureItem(R.drawable.burt_wide_1, swipe = true),
                 TextItem("This Burt is staying right where he is"),
