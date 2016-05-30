@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'com.neenbedankt.android-apt'
 
 buildscript {
     repositories {
@@ -8,6 +9,7 @@ buildscript {
     }
     dependencies {
         classpath rootProject.ext.kotlinGradle
+        classpath rootProject.ext.androidApt
     }
 }
 
@@ -41,4 +43,6 @@ dependencies {
     compile rootProject.ext.supportRecyclerView
     compile rootProject.ext.supportAnnotations
     compile rootProject.ext.kotlinStdlib
+    compile rootProject.ext.butterknife
+    apt rootProject.ext.butterknifeCompiler
 }

@@ -37,4 +37,7 @@ ext {
     supportRecyclerView = 'com.android.support:recyclerview-v7:23.4.0'
     kotlinStdlib = "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     kotlinGradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    androidApt = 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    butterknife = 'com.jakewharton:butterknife:8.0.1'
+    butterknifeCompiler = 'com.jakewharton:butterknife-compiler:8.0.1'
 }
