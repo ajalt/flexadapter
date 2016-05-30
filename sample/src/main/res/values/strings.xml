@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">FlexAdapter</string>
+    <string name="title_drag_all">Move these Burts</string>
+    <string name="title_swipe">This Burt is going for a drive</string>
+    <string name="title_post_swipe">Vroom vroom</string>
+    <string name="title_no_swipe">This Burt is staying right where he is</string>
+    <string name="title_drag_vertical">Rank your favorite movie stars:</string>
+    <string name="list_drag_01">• Burt Reynolds</string>
+    <string name="list_drag_02">• Robert Duvall</string>
+    <string name="list_drag_03">• Al Pacino</string>
+    <string name="list_drag_04">• Robert De Niro</string>
+    <string name="list_drag_05">• Harrison Ford</string>
+    <string name="list_drag_06">• Jack Nicholson</string>
+    <string name="snackbar_add_success">Here\'s a Burt</string>
+    <string name="snackbar_add_failure">You can\'t handle any more Burts</string>
+    <string name="action_undo">undo</string>
+
+
+
+
+
+
+
 </resources>

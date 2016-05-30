@@ -2,6 +2,7 @@ package com.github.ajalt.flexadapter.sample
 
 import android.os.Bundle
 import android.support.annotation.DrawableRes
+import android.support.annotation.StringRes
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
@@ -18,10 +19,10 @@ val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
 val ALL_DIRS = HORIZONTAL or VERTICAL
 
 /** An text item or header */
-class TextItem(var text: String, dragDirs: Int = 0) :
+class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
         FlexAdapterExtensionItem(R.layout.item_text, dragDirs = dragDirs, span = 3) {
     override fun bindItemView(itemView: View, position: Int) {
-        itemView.text_view.text = text
+        itemView.text_view.setText(text)
     }
 }
 
@@ -55,8 +56,8 @@ class MainActivity : AppCompatActivity() {
         }
         adapter.itemTouchHelper.attachToRecyclerView(recyclerView)
 
-        val header1 = TextItem("Move these Burts")
-        val header2 = TextItem("This Burt is going for a drive")
+        val header1 = TextItem(R.string.title_drag_all)
+        val header2 = TextItem(R.string.title_swipe)
         val items = listOf(
                 header1,
                 SquarePictureItem(R.drawable.burt_square_1),
@@ -68,16 +69,16 @@ class MainActivity : AppCompatActivity() {
                 SquarePictureItem(R.drawable.burt_square_7),
                 SquarePictureItem(R.drawable.burt_square_8),
                 SquarePictureItem(R.drawable.burt_square_9),
-                TextItem("Rank your favorite movie stars:"),
-                TextItem("• Burt Reynolds"),
-                TextItem("• Robert Duvall", dragDirs = VERTICAL),
-                TextItem("• Al Pacino", dragDirs = VERTICAL),
-                TextItem("• Robert De Niro", dragDirs = VERTICAL),
-                TextItem("• Harrison Ford", dragDirs = VERTICAL),
-                TextItem("• Jack Nicholson", dragDirs = VERTICAL),
+                TextItem(R.string.title_drag_vertical),
+                TextItem(R.string.list_drag_01),
+                TextItem(R.string.list_drag_02, dragDirs = VERTICAL),
+                TextItem(R.string.list_drag_03, dragDirs = VERTICAL),
+                TextItem(R.string.list_drag_04, dragDirs = VERTICAL),
+                TextItem(R.string.list_drag_05, dragDirs = VERTICAL),
+                TextItem(R.string.list_drag_06, dragDirs = VERTICAL),
                 header2,
                 WidePictureItem(R.drawable.burt_wide_1, swipe = true),
-                TextItem("This Burt is staying right where he is"),
+                TextItem(R.string.title_no_swipe),
                 WidePictureItem(R.drawable.burt_wide_2)
         )
 
@@ -85,7 +86,7 @@ class MainActivity : AppCompatActivity() {
 
         // Change the header text when the car picture is swiped away
         adapter.itemSwipedListener = {
-            header2.text = "Vroom vroom"
+            header2.text = R.string.title_post_swipe
             adapter.notifyItemChanged(0)
         }
 
@@ -98,12 +99,12 @@ class MainActivity : AppCompatActivity() {
 
         fab.setOnClickListener {
             if (extraBurtsAdded >= extraBurts.size) {
-                Snackbar.make(root_layout, "You can't handle any more Burts", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(root_layout, R.string.snackbar_add_failure, Snackbar.LENGTH_SHORT).show()
             } else {
                 val item = extraBurts[extraBurtsAdded++]
                 adapter.insertItem(adapter.indexOf(header1) + 1, item)
-                Snackbar.make(root_layout, "Here's a Burt", Snackbar.LENGTH_SHORT)
-                        .setAction("undo", { adapter.removeItem(item); extraBurtsAdded-- })
+                Snackbar.make(root_layout, R.string.snackbar_add_success, Snackbar.LENGTH_SHORT)
+                        .setAction(R.string.action_undo, { adapter.removeItem(item); extraBurtsAdded-- })
                         .show()
             }
         }
