@@ -18,7 +18,7 @@ val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
 val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
 val ALL_DIRS = HORIZONTAL or VERTICAL
 
-/** An text item or header */
+/** A regular text item */
 class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
         FlexAdapterExtensionItem(R.layout.item_text, dragDirs = dragDirs, span = 3) {
     override fun bindItemView(itemView: View, position: Int) {
@@ -26,7 +26,15 @@ class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
     }
 }
 
-/** An image that spans all three rows */
+/** A large header text item */
+class HeaderItem(@StringRes var text: Int, dragDirs: Int = 0) :
+        FlexAdapterExtensionItem(R.layout.item_header, dragDirs = dragDirs, span = 3) {
+    override fun bindItemView(itemView: View, position: Int) {
+        itemView.text_view.setText(text)
+    }
+}
+
+/** An image that spans all three columns */
 class WidePictureItem(@DrawableRes val imageRes: Int, swipe: Boolean = false) :
         FlexAdapterExtensionItem(R.layout.item_picture, span = 3, swipeDirs = if (swipe) HORIZONTAL else 0) {
     override fun bindItemView(itemView: View, position: Int) {
@@ -39,6 +47,13 @@ class SquarePictureItem(@DrawableRes val imageRes: Int) :
         FlexAdapterExtensionItem(R.layout.item_picture_square, dragDirs = ALL_DIRS) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.image_view.setImageResource(imageRes)
+    }
+}
+
+/** A divider that spans all columns */
+class DividerItem() : FlexAdapterExtensionItem(R.layout.item_divider, span = 3) {
+    override fun bindItemView(itemView: View, position: Int) {
+        // Nothing to bind for this item
     }
 }
 
@@ -56,8 +71,8 @@ class MainActivity : AppCompatActivity() {
         }
         adapter.itemTouchHelper.attachToRecyclerView(recyclerView)
 
-        val header1 = TextItem(R.string.title_drag_all)
-        val header2 = TextItem(R.string.title_swipe)
+        val header1 = HeaderItem(R.string.title_drag_all)
+        val header2 = HeaderItem(R.string.title_swipe)
         val items = listOf(
                 header1,
                 SquarePictureItem(R.drawable.burt_square_1),
@@ -69,16 +84,18 @@ class MainActivity : AppCompatActivity() {
                 SquarePictureItem(R.drawable.burt_square_7),
                 SquarePictureItem(R.drawable.burt_square_8),
                 SquarePictureItem(R.drawable.burt_square_9),
-                TextItem(R.string.title_drag_vertical),
+                DividerItem(),
+                HeaderItem(R.string.title_drag_vertical),
                 TextItem(R.string.list_drag_01),
                 TextItem(R.string.list_drag_02, dragDirs = VERTICAL),
                 TextItem(R.string.list_drag_03, dragDirs = VERTICAL),
                 TextItem(R.string.list_drag_04, dragDirs = VERTICAL),
                 TextItem(R.string.list_drag_05, dragDirs = VERTICAL),
                 TextItem(R.string.list_drag_06, dragDirs = VERTICAL),
+                DividerItem(),
                 header2,
                 WidePictureItem(R.drawable.burt_wide_1, swipe = true),
-                TextItem(R.string.title_no_swipe),
+                HeaderItem(R.string.title_no_swipe),
                 WidePictureItem(R.drawable.burt_wide_2)
         )
 
@@ -87,7 +104,7 @@ class MainActivity : AppCompatActivity() {
         // Change the header text when the car picture is swiped away
         adapter.itemSwipedListener = {
             header2.text = R.string.title_post_swipe
-            adapter.notifyItemChanged(0)
+            adapter.notifyItemChanged(adapter.indexOf(header2))
         }
 
         // These will get added when the fab is pressed
