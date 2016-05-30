@@ -76,7 +76,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     /** Add new items to the adapter at the end of the list of current items. */
-    fun addItems(items: Collection<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
+    fun addItems(vararg items: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         for (item in items) {
             recordItemType(item)
         }

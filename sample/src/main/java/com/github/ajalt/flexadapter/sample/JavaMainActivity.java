@@ -24,8 +24,6 @@ import com.github.ajalt.flexadapter.FlexAdapterItem;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import kotlin.jvm.functions.Function1;
@@ -198,7 +196,7 @@ public class JavaMainActivity extends AppCompatActivity {
         final HeaderItem header1 = new HeaderItem(R.string.title_drag_all);
         final HeaderItem header2 = new HeaderItem(R.string.title_swipe);
 
-        FlexAdapterItem<?>[] items = {
+        adapter.addItems(
                 header1,
                 new SquarePictureItem(R.drawable.burt_square_1),
                 new SquarePictureItem(R.drawable.burt_square_2),
@@ -221,10 +219,8 @@ public class JavaMainActivity extends AppCompatActivity {
                 header2,
                 new WidePictureItem(R.drawable.burt_wide_1, HORIZONTAL),
                 new HeaderItem(R.string.title_no_swipe),
-                new WidePictureItem(R.drawable.burt_wide_2, 0),
-        };
-
-        adapter.addItems(Arrays.asList(items));
+                new WidePictureItem(R.drawable.burt_wide_2, 0)
+        );
 
         // Change the header text when the car picture is swiped away
         adapter.setItemSwipedListener(item -> {

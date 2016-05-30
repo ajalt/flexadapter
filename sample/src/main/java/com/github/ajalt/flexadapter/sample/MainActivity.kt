@@ -77,8 +77,8 @@ class MainActivity : AppCompatActivity() {
 
         val header1 = HeaderItem(R.string.title_drag_all)
         val header2 = HeaderItem(R.string.title_swipe)
-        val items = listOf(
-                header1,
+
+        adapter.addItems(header1,
                 SquarePictureItem(R.drawable.burt_square_1),
                 SquarePictureItem(R.drawable.burt_square_2),
                 SquarePictureItem(R.drawable.burt_square_3),
@@ -102,8 +102,6 @@ class MainActivity : AppCompatActivity() {
                 HeaderItem(R.string.title_no_swipe),
                 WidePictureItem(R.drawable.burt_wide_2)
         )
-
-        adapter.addItems(items)
 
         // Change the header text when the car picture is swiped away
         adapter.itemSwipedListener = {
