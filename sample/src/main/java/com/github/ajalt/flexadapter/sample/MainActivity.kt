@@ -1,5 +1,6 @@
 package com.github.ajalt.flexadapter.sample
 
+import android.content.Intent
 import android.os.Bundle
 import android.support.annotation.DrawableRes
 import android.support.annotation.StringRes
@@ -7,6 +8,8 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import com.github.ajalt.flexadapter.FlexAdapter
 import com.github.ajalt.flexadapter.FlexAdapterExtensionItem
@@ -126,5 +129,16 @@ class MainActivity : AppCompatActivity() {
                         .show()
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menu?.add("Switch to java sample")
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        startActivity(Intent(this, JavaMainActivity::class.java))
+        finish()
+        return true
     }
 }

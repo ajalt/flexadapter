@@ -1,5 +1,6 @@
 package com.github.ajalt.flexadapter.sample;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.LayoutRes;
@@ -11,6 +12,8 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -248,5 +251,17 @@ public class JavaMainActivity extends AppCompatActivity {
                         }).show();
             }
         });
+    }
+
+    @Override public boolean onCreateOptionsMenu(Menu menu) {
+        if (menu != null) {
+            menu.add("Switch to Kotlin sample");
+        }
+        return true;
+    }
+
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+        startActivity(new Intent(this, MainActivity.class));
+        return true;
     }
 }
