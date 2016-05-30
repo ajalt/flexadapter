@@ -14,44 +14,45 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_picture.view.*
 import kotlinx.android.synthetic.main.item_text.view.*
 
+val COLUMNS = 3
 val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
 val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
 val ALL_DIRS = HORIZONTAL or VERTICAL
 
 /** A regular text item */
 class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
-        FlexAdapterExtensionItem(R.layout.item_text, dragDirs = dragDirs, span = 3) {
+        FlexAdapterExtensionItem(R.layout.item_text, dragDirs = dragDirs, span = COLUMNS) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.text_view.setText(text)
     }
 }
 
 /** A large header text item */
-class HeaderItem(@StringRes var text: Int, dragDirs: Int = 0) :
-        FlexAdapterExtensionItem(R.layout.item_header, dragDirs = dragDirs, span = 3) {
+class HeaderItem(@StringRes var text: Int) :
+        FlexAdapterExtensionItem(R.layout.item_header, span = COLUMNS) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.text_view.setText(text)
     }
 }
 
 /** An image that spans all three columns */
-class WidePictureItem(@DrawableRes val imageRes: Int, swipe: Boolean = false) :
-        FlexAdapterExtensionItem(R.layout.item_picture, span = 3, swipeDirs = if (swipe) HORIZONTAL else 0) {
+class WidePictureItem(@DrawableRes val image: Int, swipeDirs: Int = 0) :
+        FlexAdapterExtensionItem(R.layout.item_picture, span = COLUMNS, swipeDirs = swipeDirs) {
     override fun bindItemView(itemView: View, position: Int) {
-        itemView.image_view.setImageResource(imageRes)
+        itemView.image_view.setImageResource(image)
     }
 }
 
 /** A picture in a square frame layout */
-class SquarePictureItem(@DrawableRes val imageRes: Int) :
+class SquarePictureItem(@DrawableRes val image: Int) :
         FlexAdapterExtensionItem(R.layout.item_picture_square, dragDirs = ALL_DIRS) {
     override fun bindItemView(itemView: View, position: Int) {
-        itemView.image_view.setImageResource(imageRes)
+        itemView.image_view.setImageResource(image)
     }
 }
 
 /** A divider that spans all columns */
-class DividerItem() : FlexAdapterExtensionItem(R.layout.item_divider, span = 3) {
+class DividerItem() : FlexAdapterExtensionItem(R.layout.item_divider, span = COLUMNS) {
     override fun bindItemView(itemView: View, position: Int) {
         // Nothing to bind for this item
     }
@@ -66,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         recyclerView.adapter = adapter
-        recyclerView.layoutManager = GridLayoutManager(this, 3).apply {
+        recyclerView.layoutManager = GridLayoutManager(this, COLUMNS).apply {
             spanSizeLookup = adapter.spanSizeLookup
         }
         adapter.itemTouchHelper.attachToRecyclerView(recyclerView)
@@ -94,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 TextItem(R.string.list_drag_06, dragDirs = VERTICAL),
                 DividerItem(),
                 header2,
-                WidePictureItem(R.drawable.burt_wide_1, swipe = true),
+                WidePictureItem(R.drawable.burt_wide_1, swipeDirs = HORIZONTAL),
                 HeaderItem(R.string.title_no_swipe),
                 WidePictureItem(R.drawable.burt_wide_2)
         )
