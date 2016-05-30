@@ -47,11 +47,7 @@ public class JavaMainActivity extends AppCompatActivity {
         @Override public int span() { return COLUMNS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
-            return new Function1<ViewGroup, ViewHolder>() {
-                @Override public ViewHolder invoke(ViewGroup parent) {
-                    return new ViewHolder(inflate(parent, R.layout.item_text));
-                }
-            };
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_text));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
@@ -76,11 +72,7 @@ public class JavaMainActivity extends AppCompatActivity {
         @Override public int span() { return COLUMNS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
-            return new Function1<ViewGroup, ViewHolder>() {
-                @Override public ViewHolder invoke(ViewGroup parent) {
-                    return new ViewHolder(inflate(parent, R.layout.item_header));
-                }
-            };
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_header));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
@@ -111,11 +103,7 @@ public class JavaMainActivity extends AppCompatActivity {
         @Override public int swipeDirs() { return swipeDirs; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
-            return new Function1<ViewGroup, ViewHolder>() {
-                @Override public ViewHolder invoke(ViewGroup parent) {
-                    return new ViewHolder(inflate(parent, R.layout.item_picture));
-                }
-            };
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_picture));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
@@ -142,11 +130,7 @@ public class JavaMainActivity extends AppCompatActivity {
         @Override public int dragDirs() { return ALL_DIRS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
-            return new Function1<ViewGroup, ViewHolder>() {
-                @Override public ViewHolder invoke(ViewGroup parent) {
-                    return new ViewHolder(inflate(parent, R.layout.item_picture_square));
-                }
-            };
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_picture_square));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
@@ -169,11 +153,7 @@ public class JavaMainActivity extends AppCompatActivity {
         }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
-            return new Function1<ViewGroup, ViewHolder>() {
-                @Override public ViewHolder invoke(ViewGroup parent) {
-                    return new ViewHolder(inflate(parent, R.layout.item_divider));
-                }
-            };
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_divider));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
@@ -244,11 +224,9 @@ public class JavaMainActivity extends AppCompatActivity {
         adapter.addItems(Arrays.asList(items));
 
         // Change the header text when the car picture is swiped away
-        adapter.setItemSwipedListener(new FlexAdapter.ItemSwipedListener() {
-            @Override public void onItemSwiped(@NotNull FlexAdapterItem<?> item) {
-                header2.text = R.string.title_post_swipe;
-                adapter.notifyItemChanged(adapter.indexOf(header2));
-            }
+        adapter.setItemSwipedListener(item -> {
+            header2.text = R.string.title_post_swipe;
+            adapter.notifyItemChanged(adapter.indexOf(header2));
         });
 
         final FlexAdapterItem<?>[] extraBurts = {
@@ -257,21 +235,17 @@ public class JavaMainActivity extends AppCompatActivity {
                 new SquarePictureItem(R.drawable.burt_square_12),
         };
 
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override public void onClick(View v) {
-                if (extraBurtsAdded >= extraBurts.length) {
-                    Snackbar.make(rootView, R.string.snackbar_add_failure, Snackbar.LENGTH_SHORT).show();
-                } else {
-                    final FlexAdapterItem<?> item = extraBurts[extraBurtsAdded++];
-                    adapter.insertItem(adapter.indexOf(header1) + 1, item);
-                    Snackbar.make(rootView, R.string.snackbar_add_success, Snackbar.LENGTH_SHORT)
-                            .setAction(R.string.action_undo, new View.OnClickListener() {
-                                @Override public void onClick(View v) {
-                                    adapter.removeItem(item);
-                                    extraBurtsAdded--;
-                                }
-                            }).show();
-                }
+        fab.setOnClickListener(v -> {
+            if (extraBurtsAdded >= extraBurts.length) {
+                Snackbar.make(rootView, R.string.snackbar_add_failure, Snackbar.LENGTH_SHORT).show();
+            } else {
+                final FlexAdapterItem<?> item = extraBurts[extraBurtsAdded++];
+                adapter.insertItem(adapter.indexOf(header1) + 1, item);
+                Snackbar.make(rootView, R.string.snackbar_add_success, Snackbar.LENGTH_SHORT)
+                        .setAction(R.string.action_undo, v1 -> {
+                            adapter.removeItem(item);
+                            extraBurtsAdded--;
+                        }).show();
             }
         });
     }

@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'me.tatarka.retrolambda'
 
 buildscript {
     repositories {
@@ -10,6 +11,7 @@ buildscript {
     dependencies {
         classpath rootProject.ext.kotlinGradle
         classpath rootProject.ext.androidApt
+        classpath rootProject.ext.gradleRetrolambda
     }
 }
 
@@ -33,6 +35,11 @@ android {
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -45,4 +52,6 @@ dependencies {
     compile rootProject.ext.kotlinStdlib
     compile rootProject.ext.butterknife
     apt rootProject.ext.butterknifeCompiler
+
+    retrolambdaConfig rootProject.ext.retrolambda
 }
