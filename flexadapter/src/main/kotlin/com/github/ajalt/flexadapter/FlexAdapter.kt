@@ -22,6 +22,9 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      */
     var itemSwipedListener: ((item: FlexAdapterItem<*>) -> Unit)? = null
 
+    /**
+     * A version of [setItemSwipedListener] that takes an interface that's easier to call from Java.
+     */
     fun setItemSwipedListener(listener: ItemSwipedListener) {
         itemSwipedListener = { listener.onItemSwiped(it) }
     }
@@ -33,6 +36,9 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      */
     var itemDraggedListener: ((item: FlexAdapterItem<*>, from: Int, to: Int) -> Unit)? = null
 
+    /**
+     * A version of [setItemDraggedListener] that takes an interface that's easier to call from Java.
+     */
     fun setItemDraggedListener(listener: ItemDraggedListener) {
         itemDraggedListener = { item, from, to -> listener.onItemDragged(item, from, to) }
     }
