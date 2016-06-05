@@ -18,12 +18,10 @@ The examples here will be in Kotlin, but this library works just as well with Ja
 // Create the adapter
 val adapter = FlexAdapter()
 recyclerView.adapter = adapter
-recyclerView.layoutManager = GridLayoutManager(this, 3).apply {
-    // This line is all that's required to enable per-item spans
-    spanSizeLookup = adapter.spanSizeLookup
-}
-// This line is all that's required to enable per-item swpe and drag
-adapter.itemTouchHelper.attachToRecyclerView(recyclerView)
+val layoutManager = GridLayoutManager(this, 3)
+// Add this line to enable per-item spans on GridLayoutManagers
+layoutManager.spanSizeLookup = adapter.spanSizeLookup
+recyclerView.layoutManager = layoutManager
 ```
 
 ##### Define item types like this:
@@ -37,7 +35,7 @@ class TextItem(var text: String) :
     }
 }
 
-// This will be a picture loaded from a resource the can be reordered by draggin in any direction.
+// This will be a picture loaded from a resource the can be reordered by dragging in any direction.
 class PictureItem(@DrawableRes val imageRes: Int) :
         FlexAdapterExtensionItem(R.layout.item_picture, dragDirs = ALL_DIRS) {
     override fun bindItemView(itemView: View, position: Int) {
@@ -69,8 +67,9 @@ Just fast, simple code that does exactly what you want.
 
 # Sample project
 
-There is a sample app [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/MainActivity.kt). 
-The entire activity is only about 100 lines of code.
+There is a Kotlin sample app [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/MainActivity.kt),
+ and a Java sample app [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/JavaMainActivity.kt)
+
 
 # Download
 
@@ -82,7 +81,7 @@ repositories {
 }
 
 dependencies {
-   compile 'com.github.ajalt:flexadapter:1.0.0'
+   compile 'com.github.ajalt:flexadapter:1.1.0'
 }
 ```
 
