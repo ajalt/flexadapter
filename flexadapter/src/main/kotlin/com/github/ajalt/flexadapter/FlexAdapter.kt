@@ -3,7 +3,6 @@ package com.github.ajalt.flexadapter
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import android.view.ViewGroup
 import java.util.*
 
@@ -25,34 +24,39 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         fun onItemDragged(item: FlexAdapterItem<*>, from: Int, to: Int)
     }
 
-    /**
-     * Set or clear a listener that will be notified when an item is dismissed with a swipe.
-     */
+    private var itemDraggedListener: ((FlexAdapterItem<*>, Int, Int) -> Unit)? = null
+    private var items: MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = mutableListOf()
+    private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
+    private var callDragListenerOnDropOnly: Boolean = true
+
+    /** Set or clear a listener that will be notified when an item is dismissed with a swipe. */
     open var itemSwipedListener: ((item: FlexAdapterItem<*>) -> Unit)? = null
 
-    /**
-     * A version of [itemSwipedListener] that takes an interface that's easier to call from Java.
-     */
+    /** A version of [itemSwipedListener] that takes an interface that's easier to call from Java. */
     open fun setItemSwipedListener(listener: ItemSwipedListener) {
         itemSwipedListener = { listener.onItemSwiped(it) }
     }
 
     /**
-     * Set or clear a listener that will be notified when an item dragged to a new position.
+     * Set or clear a listener that will be called when an item in the adapter is dragged.
      *
-     * The listener is only applicable if you set up your [RecyclerView] to use the [.getItemTouchHelper]
+     * @param listener       The callback that will be called when an item is dragged
+     * @param callOnDropOnly If true, the listener will be be called when an item is dropped in new
+     *                       location. If false, it will be called while an item is being dragged.
      */
-    open var itemDraggedListener: ((item: FlexAdapterItem<*>, from: Int, to: Int) -> Unit)? = null
+    open fun setItemDraggedListener(callOnDropOnly: Boolean = true, listener: ((item: FlexAdapterItem<*>, from: Int, to: Int) -> Unit)?) {
+        itemDraggedListener = listener
+        callDragListenerOnDropOnly = callOnDropOnly
+    }
 
     /**
      * A version of [setItemDraggedListener] that takes an interface that's easier to call from Java.
      */
-    open fun setItemDraggedListener(listener: ItemDraggedListener) {
+    @JvmOverloads
+    open fun setItemDraggedListener(callOnDropOnly: Boolean = true, listener: ItemDraggedListener) {
         itemDraggedListener = { item, from, to -> listener.onItemDragged(item, from, to) }
+        callDragListenerOnDropOnly = callOnDropOnly
     }
-
-    private var items: MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = mutableListOf()
-    private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
 
     /** Remove all items from the adapter */
     open fun clear() {
@@ -106,7 +110,8 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         notifyItemRemoved(position)
     }
 
-    /** Remove an item from the adapter.
+    /**
+     * Remove an item from the adapter.
      *
      * If the item is not contained in the adapter, no action is taken.
      */
@@ -163,11 +168,13 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
      * An ItemTouchHelper for RecyclerViews.
      *
      * If any of the items in your RecyclerView might support drag or swipe, you should pass your
-     * RecyclerView to the [ItemTouchHelper.attachToRecyclerView] method of the
-     * returned helper.
+     * RecyclerView to the [ItemTouchHelper.attachToRecyclerView] method of the returned helper.
      */
     open val itemTouchHelper: ItemTouchHelper
         get() = ItemTouchHelper(object : ItemTouchHelper.Callback() {
+            private var dragFrom: Int = -1
+            private var dragTo: Int = -1
+
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
                 val i = viewHolder.adapterPosition
                 if (i < 0 || i >= items.size) {
@@ -184,11 +191,19 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
                 if (from < 0 || from >= items.size ||
                         to < 0 || to >= items.size ||
                         items[to].dragDirs() == 0) {
+                    dragFrom = -1
+                    dragTo = -1
                     return false
                 }
 
+                dragTo = to
+                if (dragFrom < 0) dragFrom = from
+
                 moveItem(from, to)
-                itemDraggedListener?.invoke(items[to], from, to)
+
+                if (!callDragListenerOnDropOnly) {
+                    itemDraggedListener?.invoke(items[to], from, to)
+                }
                 return true
             }
 
@@ -200,6 +215,17 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
 
                 itemSwipedListener?.invoke(items[i])
                 removeItem(i)
+            }
+
+            override fun clearView(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?) {
+                super.clearView(recyclerView, viewHolder)
+
+                if (callDragListenerOnDropOnly && dragFrom >= 0 && dragTo >= 0 && dragFrom != dragTo) {
+                    itemDraggedListener?.invoke(items[dragTo], dragFrom, dragTo)
+                }
+
+                dragFrom = -1
+                dragTo = -1
             }
         })
 
