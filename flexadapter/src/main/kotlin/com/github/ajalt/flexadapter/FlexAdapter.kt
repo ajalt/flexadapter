@@ -236,18 +236,23 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         }
     }
 
+    /** Return the number of items currently in the adapter. */
+    override fun getItemCount(): Int = items.size
+
+    /** @suppress */
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return viewHolderFactoriesByItemType[viewType]!!.invoke(parent)
     }
 
+    /** @suppress */
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         items[position].bindErasedViewHolder(holder, position)
     }
 
-    override fun getItemCount(): Int = items.size
-
+    /** @suppress */
     override fun getItemViewType(position: Int): Int = items[position].itemType()
 
+    /** @suppress */
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         if (registerAutomatically) {
             itemTouchHelper.attachToRecyclerView(recyclerView)

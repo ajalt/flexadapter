@@ -42,4 +42,5 @@ ext {
     butterknifeCompiler = 'com.jakewharton:butterknife-compiler:8.0.1'
     gradleRetrolambda = 'me.tatarka:gradle-retrolambda:3.2.5'
     retrolambda = 'net.orfjackal.retrolambda:retrolambda:2.3.0'
+    dokka = 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.8'
 }
