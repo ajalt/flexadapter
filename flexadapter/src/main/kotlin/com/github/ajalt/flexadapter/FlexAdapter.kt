@@ -3,10 +3,20 @@ package com.github.ajalt.flexadapter
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.Log
 import android.view.ViewGroup
 import java.util.*
 
-class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+/**
+ * A [RecyclerView.Adapter] that handles multiple item layouts with per-item swipe, drag, and span
+ * behavior.
+ *
+ * @param registerAutomatically When true, the adapter will setup the item touch helper whenever it
+ *                              is attached to a [RecyclerView]. (default true)
+ */
+open class FlexAdapter(private val registerAutomatically: Boolean = true) :
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
     interface ItemSwipedListener {
         fun onItemSwiped(item: FlexAdapterItem<*>)
     }
@@ -17,15 +27,13 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     /**
      * Set or clear a listener that will be notified when an item is dismissed with a swipe.
-     *
-     * The listener is only applicable if you set up your [RecyclerView] to use the [.getItemTouchHelper]
      */
-    var itemSwipedListener: ((item: FlexAdapterItem<*>) -> Unit)? = null
+    open var itemSwipedListener: ((item: FlexAdapterItem<*>) -> Unit)? = null
 
     /**
-     * A version of [setItemSwipedListener] that takes an interface that's easier to call from Java.
+     * A version of [itemSwipedListener] that takes an interface that's easier to call from Java.
      */
-    fun setItemSwipedListener(listener: ItemSwipedListener) {
+    open fun setItemSwipedListener(listener: ItemSwipedListener) {
         itemSwipedListener = { listener.onItemSwiped(it) }
     }
 
@@ -34,12 +42,12 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      *
      * The listener is only applicable if you set up your [RecyclerView] to use the [.getItemTouchHelper]
      */
-    var itemDraggedListener: ((item: FlexAdapterItem<*>, from: Int, to: Int) -> Unit)? = null
+    open var itemDraggedListener: ((item: FlexAdapterItem<*>, from: Int, to: Int) -> Unit)? = null
 
     /**
      * A version of [setItemDraggedListener] that takes an interface that's easier to call from Java.
      */
-    fun setItemDraggedListener(listener: ItemDraggedListener) {
+    open fun setItemDraggedListener(listener: ItemDraggedListener) {
         itemDraggedListener = { item, from, to -> listener.onItemDragged(item, from, to) }
     }
 
@@ -47,14 +55,14 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
 
     /** Remove all items from the adapter */
-    fun clear() {
+    open fun clear() {
         notifyItemRangeRemoved(0, itemCount)
         items.clear()
         viewHolderFactoriesByItemType.clear()
     }
 
     /** Remove all existing items and add the given items */
-    fun resetItems(items: List<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
+    open fun resetItems(items: Collection<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
         val oldSize = this.items.size
         this.items = items.toMutableList()
         viewHolderFactoriesByItemType.clear()
@@ -69,14 +77,14 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     /** Add a new item to the adapter at the end of the list of current items. */
-    fun addItem(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+    open fun addItem(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         recordItemType(item)
         items.add(item)
         notifyItemInserted(items.size - 1)
     }
 
     /** Add new items to the adapter at the end of the list of current items. */
-    fun addItems(vararg items: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+    open fun addItems(vararg items: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         for (item in items) {
             recordItemType(item)
         }
@@ -86,20 +94,23 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     /** Insert a new item into the adapter. */
-    fun insertItem(position: Int, item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+    open fun insertItem(position: Int, item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         recordItemType(item)
         items.add(position, item)
         notifyItemInserted(position)
     }
 
     /** Remove an item from the adapter. */
-    fun removeItem(position: Int) {
+    open fun removeItem(position: Int) {
         items.removeAt(position)
         notifyItemRemoved(position)
     }
 
-    /** Remove an item from the adapter. */
-    fun removeItem(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+    /** Remove an item from the adapter.
+     *
+     * If the item is not contained in the adapter, no action is taken.
+     */
+    open fun removeItem(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         val i = items.indexOf(item)
         if (i >= 0) {
             items.removeAt(i)
@@ -112,7 +123,10 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      *
      * Both arguments must be valid indexes into the list of items.
      */
-    fun moveItem(from: Int, to: Int) {
+    open fun moveItem(from: Int, to: Int) {
+        require(from >= 0 && from < items.size) { "Invalid index $from for list of size ${items.size}" }
+        require(to >= 0 && to < items.size) { "Invalid index $to for list of size ${items.size}" }
+
         if (from == to) return
 
         if (from < to) {
@@ -124,14 +138,14 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     }
 
     /**
-     * @param item the item to look for
+     * Return the position of the item, or -1 if not found
      *
-     * @return the position of the item, or -1 if not found
+     * @param item the item to look for
      */
-    fun indexOf(item: FlexAdapterItem<*>): Int = items.indexOf(item)
+    open fun indexOf(item: FlexAdapterItem<*>): Int = items.indexOf(item)
 
-    /** Return the index of the firs item that matches the predicate, or -1 */
-    fun indexOfFirst(predicate: (FlexAdapterItem<*>) -> Boolean): Int = items.indexOfFirst(predicate)
+    /** Return the index of the first item that matches the predicate, or -1 */
+    open fun indexOfFirst(predicate: (FlexAdapterItem<*>) -> Boolean): Int = items.indexOfFirst(predicate)
 
     /**
      * A SpanSizeLookup for grid layouts.
@@ -140,7 +154,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      * adapter might have custom span sizes, the return value of this method should be passed to
      * [GridLayoutManager.setSpanSizeLookup]
      */
-    val spanSizeLookup: GridLayoutManager.SpanSizeLookup
+    open val spanSizeLookup: GridLayoutManager.SpanSizeLookup
         get() = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int = items[position].span()
         }
@@ -152,8 +166,7 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
      * RecyclerView to the [ItemTouchHelper.attachToRecyclerView] method of the
      * returned helper.
      */
-    // If an item can't be dragged, don't let it be reordered.
-    val itemTouchHelper: ItemTouchHelper
+    open val itemTouchHelper: ItemTouchHelper
         get() = ItemTouchHelper(object : ItemTouchHelper.Callback() {
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
                 val i = viewHolder.adapterPosition
@@ -208,4 +221,10 @@ class FlexAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun getItemCount(): Int = items.size
 
     override fun getItemViewType(position: Int): Int = items[position].itemType()
+
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        if (registerAutomatically) {
+            itemTouchHelper.attachToRecyclerView(recyclerView)
+        }
+    }
 }

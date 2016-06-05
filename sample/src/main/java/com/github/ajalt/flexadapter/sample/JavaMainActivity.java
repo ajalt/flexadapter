@@ -191,7 +191,6 @@ public class JavaMainActivity extends AppCompatActivity {
         layoutManager.setSpanSizeLookup(adapter.getSpanSizeLookup());
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
-        adapter.getItemTouchHelper().attachToRecyclerView(recyclerView);
 
         final HeaderItem header1 = new HeaderItem(R.string.title_drag_all);
         final HeaderItem header2 = new HeaderItem(R.string.title_swipe);
