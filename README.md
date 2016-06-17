@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="web/wordmark.png">
+	![](web/wordmark.png)
 </h1>
 
 ### Define and coordinate items in a RecyclerView without boilerplate.
@@ -7,6 +7,11 @@
 * Multiple item layouts in a single adapter with no typecasting
 * Per-item swipe and drag behavior
 * Display ten of thousands of items without dropping frames
+
+
+<div align="center">
+	![](web/sample.gif)
+</div>
 
 # Usage
 
