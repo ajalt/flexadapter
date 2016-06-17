@@ -31,7 +31,7 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
      *
      * All items of the same class must return the same value. The default implementation is
      * suitable in most cases.
-     * 
+     *
      * @see RecyclerView.Adapter.getItemViewType
      */
     open fun itemType(): Int = javaClass.hashCode()
@@ -60,7 +60,11 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
      */
     open fun dragDirs(): Int = 0
 
-    /** Called by the [FlexAdapter] to work around Java's type erasure */
+    /**
+     * Called by the [FlexAdapter] to work around Java's type erasure
+     *
+     * @suppress
+     */
     @Suppress("UNCHECKED_CAST")
     internal fun bindErasedViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         bindViewHolder(holder as VH, position)

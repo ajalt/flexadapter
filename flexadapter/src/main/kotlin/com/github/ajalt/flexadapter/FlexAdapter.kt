@@ -14,7 +14,7 @@ import java.util.*
  *                              is attached to a [RecyclerView]. (default true)
  */
 open class FlexAdapter(private val registerAutomatically: Boolean = true) :
-        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+       RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     interface ItemSwipedListener {
         fun onItemSwiped(item: FlexAdapterItem<*>)
