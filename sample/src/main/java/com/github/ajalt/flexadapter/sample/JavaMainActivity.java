@@ -249,14 +249,17 @@ public class JavaMainActivity extends AppCompatActivity {
     }
 
     @Override public boolean onCreateOptionsMenu(Menu menu) {
-        if (menu != null) {
-            menu.add("Switch to Kotlin sample");
-        }
+        menu.add(0, 0, 0, "Switch to Kotlin sample");
+        menu.add(1, 1, 1, "Switch to view pager sample");
         return true;
     }
 
     @Override public boolean onOptionsItemSelected(MenuItem item) {
-        startActivity(new Intent(this, MainActivity.class));
+        if (item.getItemId() == 0) {
+            startActivity(new Intent(this, MainActivity.class));
+        } else if (item.getItemId() == 1) {
+            startActivity(new Intent(this, ViewPagerActivity.class));
+        }
         return true;
     }
 }

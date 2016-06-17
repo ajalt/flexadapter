@@ -14,11 +14,9 @@
     <string name="snackbar_add_success">Here\'s a Burt</string>
     <string name="snackbar_add_failure">You can\'t handle any more Burts</string>
     <string name="action_undo">undo</string>
-
-
-
-
-
-
-
+    <string name="adapter_subtitle">Swipe above, friend.</string>
+    <string name="pager_title_1">One Burt</string>
+    <string name="pager_title_2">Two Burt</string>
+    <string name="pager_title_3">Red Burt</string>
+    <string name="pager_title_4">Blue Burt</string>
 </resources>

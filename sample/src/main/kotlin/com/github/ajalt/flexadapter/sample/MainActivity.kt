@@ -128,13 +128,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menu?.add("Switch to java sample")
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menu.add(0, 0, 0, "Switch to java sample")
+        menu.add(1, 1, 1, "Switch to view pager sample")
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        startActivity(Intent(this, JavaMainActivity::class.java))
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            0 -> startActivity(Intent(this, JavaMainActivity::class.java))
+            1 -> startActivity(Intent(this, ViewPagerActivity::class.java))
+        }
+
         finish()
         return true
     }

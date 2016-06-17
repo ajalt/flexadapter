@@ -7,6 +7,9 @@ import android.view.ViewGroup
 import java.util.*
 
 
+/**
+ * A [PagerAdapter] with a similar API to the [FlexAdapter]
+ */
 open class FlexPagerAdapter : PagerAdapter() {
     private var items: MutableList<Pair<FlexAdapterItem<out RecyclerView.ViewHolder>, RecyclerView.ViewHolder?>> = mutableListOf()
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
@@ -45,13 +48,16 @@ open class FlexPagerAdapter : PagerAdapter() {
         notifyDataSetChanged()
     }
 
-    fun itemAt(position: Int) = items[position]
+    /** Return the item at a given position. */
+    fun itemAt(position: Int): FlexAdapterItem<out RecyclerView.ViewHolder> = items[position].first
 
+    /** Update the item at [position] */
     fun notifyItemChanged(position: Int) {
         val vh = items[position].second ?: return
         items[position].first.bindErasedViewHolder(vh, position)
     }
 
+    /** Update the [itemCount] items starting at [positionStart] */
     fun notifyItemRangeChanged(positionStart: Int, itemCount: Int) {
         for (i in positionStart..positionStart + itemCount - 1) {
             notifyItemChanged(i)
@@ -74,7 +80,9 @@ open class FlexPagerAdapter : PagerAdapter() {
     override fun isViewFromObject(view: View?, o: Any?): Boolean = view == o
 
     /** @suppress */
-    override fun destroyItem(container: ViewGroup, position: Int, o: Any?) = container.removeView(o as View)
+    override fun destroyItem(container: ViewGroup, position: Int, o: Any?) {
+        container.removeView(o as View)
+    }
 
     private fun recordItemType(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         val type = item.itemType()
