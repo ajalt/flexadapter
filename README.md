@@ -1,5 +1,5 @@
 <h1 align="center">
-	![](web/wordmark.png)
+	<img src="web/wordmark.png">
 </h1>
 
 ### Define and coordinate items in a RecyclerView without boilerplate.
@@ -10,7 +10,7 @@
 
 
 <div align="center">
-	![](web/sample.gif)
+	<img src="web/sample.gif">
 </div>
 
 # Usage
