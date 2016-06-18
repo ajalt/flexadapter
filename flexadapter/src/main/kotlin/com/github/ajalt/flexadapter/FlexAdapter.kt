@@ -89,6 +89,8 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
 
     /** Add new items to the adapter at the end of the list of current items. */
     open fun addItems(vararg items: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+        if (items.isEmpty()) return
+
         for (item in items) {
             recordItemType(item)
         }
