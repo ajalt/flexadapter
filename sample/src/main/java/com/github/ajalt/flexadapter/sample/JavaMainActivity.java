@@ -47,7 +47,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
         @Override public int span() { return COLUMNS; }
 
-        @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
+        @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_text));
         }
 
@@ -72,7 +72,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
         @Override public int span() { return COLUMNS; }
 
-        @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
+        @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_header));
         }
 
@@ -103,7 +103,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
         @Override public int swipeDirs() { return swipeDirs; }
 
-        @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
+        @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_picture));
         }
 
@@ -130,7 +130,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
         @Override public int dragDirs() { return ALL_DIRS; }
 
-        @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
+        @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_picture_square));
         }
 
@@ -153,7 +153,7 @@ public class JavaMainActivity extends AppCompatActivity {
             return COLUMNS;
         }
 
-        @NotNull @Override public Function1<ViewGroup, ViewHolder> createViewHolder() {
+        @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_divider));
         }
 

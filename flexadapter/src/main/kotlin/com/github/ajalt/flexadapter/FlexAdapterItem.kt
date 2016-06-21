@@ -15,7 +15,7 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
      *
      * The argument to the returned method is the parent [ViewGroup]
      */
-    abstract fun createViewHolder(): (ViewGroup) -> VH
+    abstract fun viewHolderFactory(): (ViewGroup) -> VH
 
     /**
      * Bind the contents of this item to a view holder.

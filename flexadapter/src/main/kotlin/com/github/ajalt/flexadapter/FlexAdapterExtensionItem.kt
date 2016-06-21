@@ -11,6 +11,13 @@ import android.view.ViewGroup
  *
  * Definition and creation of the view holder is taken care of, so subclasses just need define a
  * binder function.
+ *
+ * @constructor You can pass values to the constructor instead of overriding [dragDirs], [swipeDirs], and [span]
+ *
+ * @param layoutRes The layout resource for items of this type.
+ * @param dragDirs Equivalent to overriding [FlexAdapterItem.dragDirs]
+ * @param swipeDirs Equivalent to overriding [FlexAdapterItem.swipeDirs]
+ * @param span Equivalent to overriding [FlexAdapterItem.span]
  */
 abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
                                         val dragDirs: Int = 0,
@@ -23,7 +30,7 @@ abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
     override fun swipeDirs(): Int = swipeDirs
     override fun span(): Int = span
 
-    override fun createViewHolder(): (ViewGroup) -> ViewHolder = {
+    override fun viewHolderFactory(): (ViewGroup) -> ViewHolder = {
         ViewHolder(LayoutInflater.from(it.context).inflate(layoutRes, it, false))
     }
 

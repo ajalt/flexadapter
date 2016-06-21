@@ -232,7 +232,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     private fun recordItemType(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         val type = item.itemType()
         if (!viewHolderFactoriesByItemType.containsKey(type)) {
-            viewHolderFactoriesByItemType.put(type, item.createViewHolder())
+            viewHolderFactoriesByItemType.put(type, item.viewHolderFactory())
         }
     }
 
