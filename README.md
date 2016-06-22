@@ -4,9 +4,9 @@
 
 ### Define and coordinate multiple layouts in a RecyclerView or ViewPager without boilerplate.
 
-* Multiple item layouts in a single adapter with no typecasting
-* Per-item swipe and drag behavior
-* Display ten of thousands of items without dropping frames
+- Multiple item layouts in a single adapter with no typecasting.
+- Per-item span, swipe, and drag behavior in a RecyclerView in just a few lines of code.
+- Add, remove, and update multiple layouts in a ViewPager without touching Fragments.
 
 <div align="center">
 	<img src="web/sample.gif">
