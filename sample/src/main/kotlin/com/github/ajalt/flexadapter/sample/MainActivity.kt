@@ -39,8 +39,8 @@ class HeaderItem(@StringRes var text: Int) :
 }
 
 /** An image that spans all three columns */
-class WidePictureItem(@DrawableRes val image: Int, swipeDirs: Int = 0) :
-        FlexAdapterExtensionItem(R.layout.item_picture, span = COLUMNS, swipeDirs = swipeDirs) {
+class WidePictureItem(@DrawableRes val image: Int, dragDirs: Int = 0, swipeDirs: Int = 0, span: Int = COLUMNS) :
+        FlexAdapterExtensionItem(R.layout.item_picture, dragDirs = dragDirs, swipeDirs = swipeDirs, span = span) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.image_view.setImageResource(image)
     }
@@ -87,6 +87,8 @@ class MainActivity : AppCompatActivity() {
                 SquarePictureItem(R.drawable.burt_square_7),
                 SquarePictureItem(R.drawable.burt_square_8),
                 SquarePictureItem(R.drawable.burt_square_9),
+                WidePictureItem(R.drawable.burt_wide_3, span = 2, dragDirs = ALL_DIRS),
+                SquarePictureItem(R.drawable.burt_square_10),
                 DividerItem(),
                 HeaderItem(R.string.title_drag_vertical),
                 TextItem(R.string.list_drag_01),
@@ -110,7 +112,6 @@ class MainActivity : AppCompatActivity() {
 
         // These will get added when the fab is pressed
         val extraBurts = listOf(
-                SquarePictureItem(R.drawable.burt_square_10),
                 SquarePictureItem(R.drawable.burt_square_11),
                 SquarePictureItem(R.drawable.burt_square_12)
         )
