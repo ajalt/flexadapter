@@ -42,6 +42,9 @@ class ViewPagerActivity : AppCompatActivity() {
 
         // Apply negative margin to show the edges of adjacent pages
         view_pager.pageMargin = dp(-36f).toInt()
+
+        // Keep the adjacent pages loaded since they're visible
+        view_pager.offscreenPageLimit = 3
     }
 
 
