@@ -87,7 +87,7 @@ open class FlexPagerAdapter : PagerAdapter() {
     private fun recordItemType(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         val type = item.itemType()
         if (!viewHolderFactoriesByItemType.containsKey(type)) {
-            viewHolderFactoriesByItemType.put(type, item.createViewHolder())
+            viewHolderFactoriesByItemType.put(type, item.viewHolderFactory())
         }
     }
 }

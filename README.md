@@ -2,12 +2,11 @@
 	<img src="web/wordmark.png">
 </h1>
 
-### Define and coordinate items in a RecyclerView without boilerplate.
+### Define and coordinate multiple layouts in a RecyclerView or ViewPager without boilerplate.
 
 * Multiple item layouts in a single adapter with no typecasting
 * Per-item swipe and drag behavior
 * Display ten of thousands of items without dropping frames
-
 
 <div align="center">
 	<img src="web/sample.gif">
@@ -15,9 +14,9 @@
 
 # Usage
 
-#### Check this out:
+The examples will be in Kotlin, but this library works just as well with Java.
 
-The examples here will be in Kotlin, but this library works just as well with Java.
+#### Create the adapter:
 
 ```kotlin
 // Create the adapter
@@ -29,7 +28,8 @@ layoutManager.spanSizeLookup = adapter.spanSizeLookup
 recyclerView.layoutManager = layoutManager
 ```
 
-##### Define item types like this:
+
+#### Define your item types:
 
 ``` kotlin
 // This item will be a text header with a span of three that can be swiped horizontally to dismiss.
@@ -49,14 +49,19 @@ class PictureItem(@DrawableRes val imageRes: Int) :
 }
 ```
 
-##### Then add some items:
+Each layout in the adapter gets its own item class, which has fields for any
+mutable data in its layout. Since the items own the data and know how to bind
+it to a view holder, there are no intermediate data holder classes, no
+interfaces, and no casting to a base class and back.
+
+#### Then add some items:
 
 ```kotlin
-adapter.addItems(listOf(
+adapter.addItems(
     TextItem("Look at these pictures"),
     PictureItem(R.drawable.picture_1),
     PictureItem(R.drawable.picture_2)
-))
+)
 ```
 
 #### Update an existing item:
@@ -67,14 +72,41 @@ textItem.text = "Look at this new text"
 adapter.notifyItemChanged(textItem)
 ```
 
+When you want to update an item, just change its data and notify the adapter that it changed.
+
 That's it. No managing indices. No casting from interfaces or Object. 
 Just fast, simple code that does exactly what you want.
 
+# API Documentation
+
+API documentation is hosted online [here](https://jitpack.io/com/github/ajalt/flexadapter/1.4.0/javadoc/flexadapter/com.github.ajalt.flexadapter/index.html).
+
 # Sample project
 
-There is a Kotlin sample app [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/MainActivity.kt),
- and a Java sample app [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/JavaMainActivity.kt)
+To see more of the features of FlexAdapter in use, check out the Kotlin sample app 
+[here](sample/src/main/kotlin/com/github/ajalt/flexadapter/sample/MainActivity.kt),
+ or the Java sample app 
+[here](sample/src/main/java/com/github/ajalt/flexadapter/sample/JavaMainActivity.kt)
 
+# FlexAdapter for a ViewPager
+
+This library also includes an adapter for a `ViewPager` that provides the same interface as the regular `FlexAdapter`: the [FlexPagerAdapter](https://jitpack.io/com/github/ajalt/flexadapter/1.4.0/javadoc/flexadapter/com.github.ajalt.flexadapter/-flex-pager-adapter/index.html)
+
+```kotlin
+val adapter = FlexPagerAdapter()
+
+adapter.addItems(
+    TextItem("Look at these pictures"),
+    PictureItem(R.drawable.picture_1),
+    PictureItem(R.drawable.picture_2)
+)
+
+view_pager.adapter = adapter
+```
+
+That's all that's required to implement multiple layouts in a ViewPager. No need to create Fragments or manage lifecycles. The same classes can be used in both the `FlexAdapter` and `FlexPagerAdapter`. The `span`, `dragDirs`, and `swipeDirs` values will just be ignored on item added to a `FlexPagerAdapter`.
+
+You can see a sample that uses the `FlexPagerAdapter` [here](sample/src/main/kotlin/com/github/ajalt/flexadapter/sample/ViewPagerActivity.kt).
 
 # Download
 
@@ -86,11 +118,9 @@ repositories {
 }
 
 dependencies {
-   compile 'com.github.ajalt:flexadapter:1.2.0'
+   compile 'com.github.ajalt:flexadapter:1.4.0'
 }
 ```
-
-
 
 # License
 ```
