@@ -14,7 +14,7 @@ import java.util.*
  *                              is attached to a [RecyclerView]. (default true)
  */
 open class FlexAdapter(private val registerAutomatically: Boolean = true) :
-       RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+        RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     interface ItemSwipedListener {
         fun onItemSwiped(item: FlexAdapterItem<*>)
@@ -145,14 +145,29 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     }
 
     /**
-     * Return the position of the item, or -1 if not found
-     *
-     * @param item the item to look for
+     * Replace the item at [index] with [newItem]
      */
-    open fun indexOf(item: FlexAdapterItem<*>): Int = items.indexOf(item)
+    open fun swapItem(index: Int, newItem: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+        recordItemType(newItem)
+        items[index] = newItem
+        notifyItemChanged(index)
+    }
 
-    /** Return the index of the first item that matches the predicate, or -1 */
-    open fun indexOfFirst(predicate: (FlexAdapterItem<*>) -> Boolean): Int = items.indexOfFirst(predicate)
+    /**
+     * Returns first index of [item], or -1 if the adapter does not contain item.
+     */
+    open fun indexOf(item: FlexAdapterItem<out RecyclerView.ViewHolder>): Int = items.indexOf(item)
+
+    /** Returns index of the first element matching the given [predicate], or -1 if the list does not contain such element. */
+    open fun indexOfFirst(predicate: (FlexAdapterItem<out RecyclerView.ViewHolder>) -> Boolean): Int = items.indexOfFirst(predicate)
+
+    /** Returns the first element matching the given [predicate], or `null` if no such element was found. */
+    open fun find(predicate: (FlexAdapterItem<out RecyclerView.ViewHolder>) -> Boolean):
+            FlexAdapterItem<out RecyclerView.ViewHolder>? = items.find(predicate)
+
+    /** Notify the adapter that [item] has changed nad need to be redrawn. */
+    open fun notifyItemChanged(item: FlexAdapterItem<out RecyclerView.ViewHolder>) =
+        notifyItemChanged(indexOf(item))
 
     /**
      * A SpanSizeLookup for grid layouts.
