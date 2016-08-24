@@ -106,6 +106,9 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         notifyItemInserted(position)
     }
 
+    /** Return an existing item at the given position. */
+    open fun getItem(position: Int): FlexAdapterItem<out RecyclerView.ViewHolder> = items[position]
+
     /** Remove an item from the adapter. */
     open fun removeItem(position: Int) {
         items.removeAt(position)
