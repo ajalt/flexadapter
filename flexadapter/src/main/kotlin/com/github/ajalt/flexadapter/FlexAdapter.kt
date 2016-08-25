@@ -65,6 +65,14 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         viewHolderFactoriesByItemType.clear()
     }
 
+    /**
+     * Return a copy of the list of items in this adapter.
+     *
+     * You can modify the returned list, but changes won't be reflected in the adapter unless you
+     * pass the list to [resetItems].
+     */
+    open fun items(): MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = items.toMutableList()
+
     /** Remove all existing items and add the given items */
     open fun resetItems(items: Collection<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
         val oldSize = this.items.size
@@ -147,18 +155,14 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         notifyItemMoved(from, to)
     }
 
-    /**
-     * Replace the item at [index] with [newItem]
-     */
+    /** Replace the item at [index] with [newItem] */
     open fun swapItem(index: Int, newItem: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         recordItemType(newItem)
         items[index] = newItem
         notifyItemChanged(index)
     }
 
-    /**
-     * Returns first index of [item], or -1 if the adapter does not contain item.
-     */
+    /** Returns first index of [item], or -1 if the adapter does not contain item. */
     open fun indexOf(item: FlexAdapterItem<out RecyclerView.ViewHolder>): Int = items.indexOf(item)
 
     /** Returns index of the first element matching the given [predicate], or -1 if the list does not contain such element. */
@@ -170,7 +174,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
 
     /** Notify the adapter that [item] has changed nad need to be redrawn. */
     open fun notifyItemChanged(item: FlexAdapterItem<out RecyclerView.ViewHolder>) =
-        notifyItemChanged(indexOf(item))
+            notifyItemChanged(indexOf(item))
 
     /**
      * A SpanSizeLookup for grid layouts.
