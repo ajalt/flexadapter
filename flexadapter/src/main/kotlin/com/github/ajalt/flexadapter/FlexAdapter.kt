@@ -309,7 +309,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     }
 
     /** Return the number of selected items currently in the adapter. */
-    val selectedItemCount: Int get() = selectedItems.size
+    open val selectedItemCount: Int get() = selectedItems.size
 
     /** Return the number of items currently in the adapter. */
     override fun getItemCount(): Int = items.size
