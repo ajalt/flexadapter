@@ -27,6 +27,7 @@ android {
 
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
     }
 }
 
@@ -35,6 +36,12 @@ dependencies {
     compile rootProject.ext.supportRecyclerView
     compile rootProject.ext.supportAnnotations
     compile rootProject.ext.kotlinStdlib
+
+    testCompile rootProject.ext.robolectric
+    testCompile rootProject.ext.junit
+    testCompile rootProject.ext.mockito
+    testCompile (rootProject.ext.mockitoKotlin) { exclude module: 'kotlin-stdlib' }
+    testCompile rootProject.ext.assertJ
 }
 
 task sourcesJar(type: Jar) {
