@@ -78,7 +78,7 @@ Just fast, simple code that does exactly what you want.
 
 # API Documentation
 
-API documentation is hosted online [here](https://jitpack.io/com/github/ajalt/flexadapter/1.6.0/javadoc/flexadapter/com.github.ajalt.flexadapter/index.html).
+API documentation is hosted online [here](https://jitpack.io/com/github/ajalt/flexadapter/1.5.0/javadoc/flexadapter/com.github.ajalt.flexadapter/index.html).
 
 # Sample project
 
@@ -89,7 +89,7 @@ To see more of the features of FlexAdapter in use, check out the Kotlin sample a
 
 # FlexAdapter for a ViewPager
 
-This library also includes an adapter for a `ViewPager` that provides the same interface as the regular `FlexAdapter`: the [FlexPagerAdapter](https://jitpack.io/com/github/ajalt/flexadapter/1.6.0/javadoc/flexadapter/com.github.ajalt.flexadapter/-flex-pager-adapter/index.html)
+This library also includes an adapter for a `ViewPager` that provides the same interface as the regular `FlexAdapter`: the [FlexPagerAdapter](https://jitpack.io/com/github/ajalt/flexadapter/1.5.0/javadoc/flexadapter/com.github.ajalt.flexadapter/-flex-pager-adapter/index.html)
 
 ```kotlin
 val adapter = FlexPagerAdapter()
@@ -117,7 +117,7 @@ repositories {
 }
 
 dependencies {
-   compile 'com.github.ajalt:flexadapter:1.6.0'
+   compile 'com.github.ajalt:flexadapter:1.6.1'
 }
 ```
 
