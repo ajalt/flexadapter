@@ -14,6 +14,7 @@ import android.support.v7.widget.RecyclerView
 abstract class FlexAdapterSelectableItem<VH : RecyclerView.ViewHolder> : FlexAdapterItem<VH>() {
     var selected: Boolean = false
         set(value) {
+            if (field == value) return
             field = value
             selectionChangedListener?.invoke(this)
         }

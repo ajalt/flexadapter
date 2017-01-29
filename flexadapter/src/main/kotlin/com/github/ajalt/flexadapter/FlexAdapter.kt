@@ -32,6 +32,9 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
     private var callDragListenerOnDropOnly: Boolean = true
 
+    /** The number of [FlexAdapterSelectableItem]s in the adapter, whether they are selected or not. */
+    private var selectableItemCount: Int = 0
+
     /** Set or clear a listener that will be notified when an item is dismissed with a swipe. */
     open var itemSwipedListener: ((item: FlexAdapterItem<*>) -> Unit)? = null
 
@@ -65,6 +68,8 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     open fun clear() {
         notifyItemRangeRemoved(0, itemCount)
         items.clear()
+        selectableItemCount = 0
+        selectedItems.clear()
         viewHolderFactoriesByItemType.clear()
     }
 
@@ -77,7 +82,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     open fun items(): MutableList<FlexAdapterItem<out RecyclerView.ViewHolder>> = items.toMutableList()
 
     /** Return a set containing any [FlexAdapterSelectableItem]s that are currently selected. */
-    open fun selectedItems(): Set<FlexAdapterItem<out RecyclerView.ViewHolder>> = selectedItems.toMutableSet()
+    open fun selectedItems(): Set<FlexAdapterItem<out RecyclerView.ViewHolder>> = selectedItems.toSet()
 
     /**
      * Set all [FlexAdapterSelectableItem]s in this adapter to be deselected
@@ -87,6 +92,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
      * If there are no [FlexAdapterSelectableItem]s in the adapter, this call has no effect.
      */
     open fun deselectAllItems() {
+        if (selectedItems.isEmpty()) return
         selectedItems.clear()
         for ((i, item) in items.withIndex()) {
             if (item is FlexAdapterSelectableItem && item.selected) {
@@ -104,7 +110,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
      * If there are no [FlexAdapterSelectableItem]s in the adapter, this call has no effect.
      */
     open fun selectAllItems() {
-        if (selectedItemCount == itemCount) return
+        if (selectedItemCount == itemCount || selectableItemCount <= 0) return
         for ((i, item) in items.withIndex()) {
             if (item is FlexAdapterSelectableItem && !item.selected) {
                 item.selected = true
@@ -115,9 +121,18 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
 
     /** Remove all existing items and add the given items */
     open fun resetItems(items: Collection<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
+        if (selectableItemCount > 0) {
+            for (item in this.items) {
+                if (item is FlexAdapterSelectableItem) {
+                    item.selectionChangedListener = null
+                }
+            }
+        }
+
         val oldSize = this.items.size
         this.items = items.toMutableList()
         selectedItems.clear()
+        selectableItemCount = 0
         viewHolderFactoriesByItemType.clear()
 
         if (items.isEmpty()) {
@@ -140,9 +155,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     open fun addItems(vararg items: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         if (items.isEmpty()) return
 
-        for (item in items) {
-            recordItemType(item)
-        }
+        for (item in items) recordItemType(item)
         val start = this.items.size
         this.items.addAll(items)
         notifyItemRangeInserted(start, items.size)
@@ -161,7 +174,11 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     /** Remove an item from the adapter. */
     open fun removeItem(position: Int) {
         val item = items.removeAt(position)
-        selectedItems.remove(item)
+        if (item is FlexAdapterSelectableItem) {
+            item.selectionChangedListener = null
+            selectableItemCount -= 1
+            selectedItems.remove(item)
+        }
         notifyItemRemoved(position)
     }
 
@@ -172,11 +189,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
      */
     open fun removeItem(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         val i = items.indexOf(item)
-        if (i >= 0) {
-            val removedItem = items.removeAt(i)
-            selectedItems.remove(removedItem)
-            notifyItemRemoved(i)
-        }
+        if (i >= 0) removeItem(i)
     }
 
     /**
@@ -201,7 +214,13 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     /** Replace the item at [index] with [newItem] */
     open fun swapItem(index: Int, newItem: FlexAdapterItem<out RecyclerView.ViewHolder>) {
         recordItemType(newItem)
-        selectedItems.remove(items[index])
+        val oldItem = items[index]
+        if (oldItem is FlexAdapterSelectableItem) {
+            selectedItems.remove(oldItem)
+            oldItem.selectionChangedListener = null
+            selectableItemCount -= 1
+
+        }
         items[index] = newItem
         notifyItemChanged(index)
     }
@@ -305,6 +324,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         if (item is FlexAdapterSelectableItem) {
             if (item.selected) selectedItems.add(item)
             item.selectionChangedListener = itemSelectionChanged
+            selectableItemCount += 1
         }
     }
 

@@ -5,18 +5,20 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
-class TestRegularItem : FlexAdapterExtensionItem(0) {
-    override fun bindItemView(itemView: View, position: Int) {
-    }
+class TestRegularItem(val tag: String = "") : FlexAdapterExtensionItem(0) {
+    override fun toString() = super.toString() + ":$tag"
+    override fun bindItemView(itemView: View, position: Int) = Unit
 }
 
-class TestSelectableItem : FlexAdapterSelectableExtensionItem(0) {
-    override fun bindItemView(itemView: View, position: Int) {
-    }
+class TestSelectableItem(val tag: String = "") : FlexAdapterSelectableExtensionItem(0) {
+    override fun toString() = super.toString() + ":$tag"
+    override fun bindItemView(itemView: View, position: Int) = Unit
 }
 
 @RunWith(RobolectricTestRunner::class)
+@Config(manifest = Config.NONE)
 class FlexAdapterSelectableItemTest {
     val adapter = FlexAdapter()
 
@@ -34,7 +36,6 @@ class FlexAdapterSelectableItemTest {
         assertThat(adapter.selectedItems()).isEmpty()
     }
 
-
     @Test
     fun `selection count is zero when only regular items are present`() {
         val regularItem = TestRegularItem()
@@ -51,7 +52,6 @@ class FlexAdapterSelectableItemTest {
         assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
     }
-
 
     @Test
     fun `adding selected item updates count`() {
@@ -83,6 +83,18 @@ class FlexAdapterSelectableItemTest {
         assertThat(adapter.selectedItemCount).isEqualTo(1)
         assertThat(adapter.selectedItems()).containsExactly(item)
         item.selected = false
+        assertThat(adapter.selectedItemCount).isEqualTo(0)
+        assertThat(adapter.selectedItems()).isEmpty()
+    }
+
+    @Test
+    fun `removing selected item updates count`() {
+        val item = TestSelectableItem()
+        adapter.addItem(item)
+        item.selected = true
+        assertThat(adapter.selectedItemCount).isEqualTo(1)
+        assertThat(adapter.selectedItems()).containsExactly(item)
+        adapter.removeItem(0)
         assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
     }
@@ -163,5 +175,55 @@ class FlexAdapterSelectableItemTest {
         adapter.deselectAllItems()
         assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
+    }
+
+    @Test
+    fun `toggling selection of removed item does not affect adapter`() {
+        val selectableItem1 = TestSelectableItem()
+        val selectableItem2 = TestSelectableItem()
+        adapter.resetItems(listOf(selectableItem1, selectableItem2))
+        selectableItem1.selected = true
+        selectableItem2.selected = true
+        adapter.removeItem(0)
+        selectableItem1.selected = false
+        selectableItem1.selected = true
+
+        assertThat(adapter.selectedItemCount).isEqualTo(1)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
+    }
+
+    @Test
+    fun `toggling selection repeatedly does not affect adapter`() {
+        val selectableItem1 = TestSelectableItem("selectableItem1")
+        val selectableItem2 = TestSelectableItem("selectableItem2")
+        adapter.resetItems(listOf(selectableItem1, selectableItem2))
+        selectableItem1.selected = true
+        selectableItem2.selected = true
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+        selectableItem1.selected = true
+        selectableItem1.selected = true
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+        selectableItem1.selected = false
+        selectableItem2.selected = false
+        selectableItem1.selected = true
+        selectableItem2.selected = true
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+        selectableItem1.selected = false
+        selectableItem2.selected = false
+        assertThat(adapter.selectedItems()).isEmpty()
+    }
+
+    @Test
+    fun `toggling selection of reset item does not affect adapter`() {
+        val selectableItem1 = TestSelectableItem("selectableItem1")
+        val selectableItem2 = TestSelectableItem("selectableItem2")
+        adapter.resetItems(listOf(selectableItem1, selectableItem2))
+        selectableItem1.selected = true
+        selectableItem2.selected = true
+        adapter.resetItems(listOf(selectableItem2))
+        selectableItem1.selected = false
+        selectableItem1.selected = true
+
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
     }
 }
