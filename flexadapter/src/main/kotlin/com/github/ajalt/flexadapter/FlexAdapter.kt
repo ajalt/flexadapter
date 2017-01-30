@@ -2,6 +2,7 @@
 
 package com.github.ajalt.flexadapter
 
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
@@ -119,29 +120,66 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         }
     }
 
-    /** Remove all existing items and add the given items */
+    /** Remove all existing items and add the given items. */
     open fun resetItems(items: Collection<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
-        if (selectableItemCount > 0) {
-            for (item in this.items) {
-                if (item is FlexAdapterSelectableItem) {
-                    item.selectionChangedListener = null
-                }
-            }
-        }
-
         val oldSize = this.items.size
-        this.items = items.toMutableList()
-        selectedItems.clear()
-        selectableItemCount = 0
-        viewHolderFactoriesByItemType.clear()
+        resetWithoutNotification(items)
 
         if (items.isEmpty()) {
             notifyItemRangeRemoved(0, oldSize)
-            return
+        } else {
+            notifyDataSetChanged()
         }
+    }
 
-        for (item in items) recordItemType(item)
-        notifyDataSetChanged()
+    /**
+     * Remove all existing items and add the given items, using [DiffUtil] for update notifications.
+     *
+     * This is an optional version of [resetItems] that can give better update animations when you
+     * have a list of items is slightly changed from the current list of items. It's useful if you
+     * want to take the `items` list, modify it, and update the adapter with the changes.
+     *
+     * Note that this calls [DiffUtil.calculateDiff] and blocks until that function is complete, so
+     * if you have more than around 1000 items in the adapter, you should consider calculating the
+     * diff on a background thread. In that case, call the overload that takes a
+     * [DiffUtil.DiffResult].
+     *
+     * @param items The new list of items that will be present in the adapter.
+     * @param detectMoves If true, perform extra work to detect items that have moved in the list.
+     * @param callback The callback to use. An instance of [FlexAdapterDiffUtilCallback] by default.
+     */
+    open fun resetItemsWithDiff(items: List<FlexAdapterItem<out RecyclerView.ViewHolder>>,
+                                detectMoves: Boolean = false,
+                                callback: DiffUtil.Callback = FlexAdapterDiffUtilCallback(this.items, items)) {
+        if (this.items.isEmpty() || items.isEmpty()) return resetItems(items)
+        resetItemsWithDiff(items, DiffUtil.calculateDiff(callback, detectMoves))
+
+    }
+
+    /**
+     * Remove all existing items and add the given items, using [DiffUtil] for update notifications.
+     *
+     * Use this overload if you want to perform the calculations off of the main thread.
+     *
+     * Note that you must call this instead of [DiffUtil.DiffResult.dispatchUpdatesTo] directly, or
+     * the internal state of the adapter will become inconsistent.
+     *
+     * Example usage with Kotlin, RxJava, and RxAndroid:
+     * ```
+     * Observable.fromCallable {
+     *     DiffUtil.calculateDiff(FlexAdapterDiffUtilCallback(adapter.items(), newIems), false)
+     * }.observeOn(Schedulers.computation())
+     *         .subscribeOn(AndroidSchedulers.mainThread())
+     *         .subscribe { adapter.resetItemsWithDiff(newItems, it) }
+     * ```
+     *
+     * @param items The new list of items that will be present in the adapter.
+     * @param diffResult The result that will dispatch updates to this adapter.
+     */
+    open fun resetItemsWithDiff(items: List<FlexAdapterItem<out RecyclerView.ViewHolder>>,
+                                diffResult: DiffUtil.DiffResult) {
+        resetWithoutNotification(items)
+        diffResult.dispatchUpdatesTo(this)
     }
 
     /** Add a new item to the adapter at the end of the list of current items. */
@@ -360,5 +398,21 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         } else {
             selectedItems.remove(it)
         }
+    }
+
+    private fun resetWithoutNotification(items: Collection<FlexAdapterItem<out RecyclerView.ViewHolder>>) {
+        if (selectableItemCount > 0) {
+            for (item in this.items) {
+                if (item is FlexAdapterSelectableItem) {
+                    item.selectionChangedListener = null
+                }
+            }
+        }
+
+        this.items = items.toMutableList()
+        selectedItems.clear()
+        selectableItemCount = 0
+        viewHolderFactoriesByItemType.clear()
+        for (item in items) recordItemType(item)
     }
 }
