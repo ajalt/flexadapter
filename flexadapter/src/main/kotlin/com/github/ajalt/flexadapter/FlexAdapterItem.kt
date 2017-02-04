@@ -7,7 +7,7 @@ import android.view.ViewGroup
 /**
  * An item that holds data for binding in a [FlexAdapter].
  */
-abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
+abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAttrs {
     /**
      * Return a function that creates a ViewHolder for items for items whose [.itemType] matches this one.
      *
@@ -35,12 +35,12 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
      *
      * @see RecyclerView.Adapter.getItemViewType
      */
-    open fun itemType(): Int = javaClass.hashCode()
+    open val itemType: Int get() = javaClass.hashCode()
 
     /**
      * Return the number of columns that this item should span if laid out in a GridManager.
      */
-    open fun span(): Int = 1
+    override val span: Int get() = 1
 
     /**
      * If this item can be swiped away, it should return the direction flags it supports.
@@ -50,7 +50,7 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
      *
      * A return value of 0 indicates that this item cannot be swiped.
      */
-    open fun swipeDirs(): Int = 0
+    override val swipeDirs: Int get() = 0
 
     /**
      * If this item can be dragged to reorder, it should return the direction flags it
@@ -59,7 +59,7 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> {
      * A typical return value would be the bitwise OR of [ItemTouchHelper.LEFT]
      * and [ItemTouchHelper.RIGHT]
      */
-    open fun dragDirs(): Int = 0
+    override val dragDirs: Int get() = 0
 
     /**
      * Called by the [FlexAdapter] to work around Java's type erasure

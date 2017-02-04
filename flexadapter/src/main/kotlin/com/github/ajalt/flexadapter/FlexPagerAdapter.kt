@@ -70,7 +70,7 @@ open class FlexPagerAdapter : PagerAdapter() {
     /** @suppress */
     override fun instantiateItem(container: ViewGroup, position: Int): Any? {
         val vh = items[position].second ?:
-                viewHolderFactoriesByItemType[items[position].first.itemType()]!!.invoke(container)
+                viewHolderFactoriesByItemType[items[position].first.itemType]!!.invoke(container)
         items[position].first.bindErasedViewHolder(vh, position)
         container.addView(vh.itemView)
         return vh.itemView
@@ -85,7 +85,7 @@ open class FlexPagerAdapter : PagerAdapter() {
     }
 
     private fun recordItemType(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
-        val type = item.itemType()
+        val type = item.itemType
         if (!viewHolderFactoriesByItemType.containsKey(type)) {
             viewHolderFactoriesByItemType.put(type, item.viewHolderFactory())
         }

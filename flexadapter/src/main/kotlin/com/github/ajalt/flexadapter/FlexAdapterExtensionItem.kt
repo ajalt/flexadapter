@@ -20,15 +20,11 @@ import android.view.ViewGroup
  * @param span Equivalent to overriding [FlexAdapterItem.span]
  */
 abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
-                                        val dragDirs: Int = 0,
-                                        val swipeDirs: Int = 0,
-                                        val span: Int = 1) :
+                                        override val dragDirs: Int = 0,
+                                        override val swipeDirs: Int = 0,
+                                        override val span: Int = 1) :
         FlexAdapterItem<FlexAdapterExtensionItem.ViewHolder>() {
     abstract fun bindItemView(itemView: View, position: Int)
-
-    override fun dragDirs(): Int = dragDirs
-    override fun swipeDirs(): Int = swipeDirs
-    override fun span(): Int = span
 
     override fun viewHolderFactory(): (ViewGroup) -> ViewHolder = {
         ViewHolder(LayoutInflater.from(it.context).inflate(layoutRes, it, false))

@@ -286,7 +286,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
      */
     open val spanSizeLookup: GridLayoutManager.SpanSizeLookup
         get() = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int = items[position].span()
+            override fun getSpanSize(position: Int): Int = items[position].span
         }
 
     /**
@@ -307,7 +307,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
                 }
 
                 val item = items[i]
-                return makeMovementFlags(item.dragDirs(), item.swipeDirs())
+                return makeMovementFlags(item.dragDirs, item.swipeDirs)
             }
 
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean {
@@ -315,7 +315,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
                 val to = target.adapterPosition
                 if (from < 0 || from >= items.size ||
                         to < 0 || to >= items.size ||
-                        items[to].dragDirs() == 0) {
+                        items[to].dragDirs == 0) {
                     dragFrom = -1
                     dragTo = -1
                     return false
@@ -355,7 +355,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
         })
 
     private fun recordItemType(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
-        val type = item.itemType()
+        val type = item.itemType
         if (!viewHolderFactoriesByItemType.containsKey(type)) {
             viewHolderFactoriesByItemType.put(type, item.viewHolderFactory())
         }
@@ -383,7 +383,7 @@ open class FlexAdapter(private val registerAutomatically: Boolean = true) :
     }
 
     /** @suppress */
-    override fun getItemViewType(position: Int): Int = items[position].itemType()
+    override fun getItemViewType(position: Int): Int = items[position].itemType
 
     /** @suppress */
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {

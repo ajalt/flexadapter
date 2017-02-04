@@ -43,9 +43,9 @@ public class JavaMainActivity extends AppCompatActivity {
             this.dragDirs = dragDirs;
         }
 
-        @Override public int dragDirs() { return dragDirs; }
+        @Override public int getDragDirs() { return dragDirs; }
 
-        @Override public int span() { return COLUMNS; }
+        @Override public int getSpan() { return COLUMNS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_text));
@@ -70,7 +70,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
         public HeaderItem(@StringRes int text) { this.text = text; }
 
-        @Override public int span() { return COLUMNS; }
+        @Override public int getSpan() { return COLUMNS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_header));
@@ -99,9 +99,9 @@ public class JavaMainActivity extends AppCompatActivity {
             this.swipeDirs = swipeDirs;
         }
 
-        @Override public int span() { return COLUMNS; }
+        @Override public int getSpan() { return COLUMNS; }
 
-        @Override public int swipeDirs() { return swipeDirs; }
+        @Override public int getSwipeDirs() { return swipeDirs; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_picture));
@@ -128,7 +128,7 @@ public class JavaMainActivity extends AppCompatActivity {
             this.image = image;
         }
 
-        @Override public int dragDirs() { return ALL_DIRS; }
+        @Override public int getDragDirs() { return ALL_DIRS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
             return parent -> new ViewHolder(inflate(parent, R.layout.item_picture_square));
@@ -149,7 +149,7 @@ public class JavaMainActivity extends AppCompatActivity {
     }
 
     class DividerItem extends FlexAdapterItem<DividerItem.ViewHolder> {
-        @Override public int span() {
+        @Override public int getSpan() {
             return COLUMNS;
         }
 

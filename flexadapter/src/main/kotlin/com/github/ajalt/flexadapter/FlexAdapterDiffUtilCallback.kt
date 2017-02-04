@@ -21,7 +21,7 @@ import android.support.v7.util.DiffUtil
 class FlexAdapterDiffUtilCallback(val oldItems: List<FlexAdapterItem<*>>,
                                   val newItems: List<FlexAdapterItem<*>>) : DiffUtil.Callback() {
     override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean
-            = oldItems[oldItemPosition].itemType() == newItems[newItemPosition].itemType()
+            = oldItems[oldItemPosition].itemType == newItems[newItemPosition].itemType
 
     override fun getOldListSize(): Int = oldItems.size
 
