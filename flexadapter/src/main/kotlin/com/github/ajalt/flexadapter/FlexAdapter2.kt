@@ -6,7 +6,6 @@ import android.support.annotation.LayoutRes
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,9 +38,17 @@ internal interface FlexAdapterItemAttrs {
     val dragDirs: Int
 }
 
-private data class ItemAttrs(@LayoutRes val layout: Int, override val span: Int,
-                             override val swipeDirs: Int, override val dragDirs: Int,
-                             val viewBinder: (Any, View, Int) -> Unit) : FlexAdapterItemAttrs
+private interface ItemAttrs : FlexAdapterItemAttrs {
+    val layout: Int
+}
+
+private data class PlainItemAttrs(@LayoutRes override val layout: Int, override val span: Int,
+                                  override val swipeDirs: Int, override val dragDirs: Int,
+                                  val viewBinder: (Any, View, Int) -> Unit) : ItemAttrs
+
+private data class SelectableItemAttrs(@LayoutRes override val layout: Int, override val span: Int,
+                                       override val swipeDirs: Int, override val dragDirs: Int,
+                                       val viewBinder: (Any, View, Boolean, Int) -> Unit) : ItemAttrs
 
 /**
  * A [RecyclerView.Adapter] that handles multiple item layouts with per-item swipe, drag, and span
@@ -90,7 +97,7 @@ open class FlexAdapter2<T : Any>(private val registerAutomatically: Boolean = tr
     }
 
     private var itemDraggedListener: ((T, Int, Int) -> Unit)? = null
-//    private val selectedItems: MutableSet<T> = HashSet()
+    private var selectedItems: MutableSet<T> = HashSet()
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
     private val itemAttrsByItemType = HashMap<Int, ItemAttrs>()
     private var callDragListenerOnDropOnly: Boolean = true
@@ -132,92 +139,43 @@ open class FlexAdapter2<T : Any>(private val registerAutomatically: Boolean = tr
     }
 
 
-//    /** Return a set containing any [FlexAdapterSelectableItem]s that are currently selected. */
-//    open fun selectedItems(): Set<T> = selectedItems.toSet()
+    /** Return a set containing any [FlexAdapterSelectableItem]s that are currently selected. */
+    open fun selectedItems(): Set<T> = selectedItems.toSet()
 
-//    /**
-//     * Set all [FlexAdapterSelectableItem]s in this adapter to be deselected
-//     *
-//     * The deselected items will remain in the adapter and are otherwise unchanged.
-//     *
-//     * If there are no [FlexAdapterSelectableItem]s in the adapter, this call has no effect.
-//     */
-//    open fun deselectAllItems() {
-//        if (selectedItems.isEmpty()) return
-//
-//        for ((i, item) in items.withIndex()) {
-//            if (selectedItems.remove(item)) {
-//                notifyItemChanged(i)
-//            }
-//            if (selectedItems.isEmpty()) return
-//        }
-//    }
+    /** The number of items currently selected. */
+    open val selectedItemCount: Int get() = selectedItems.size
 
-//    /**
-//     * Set all [FlexAdapterSelectableItem]s in this adapter to be selected
-//     *
-//     * The selected items will remain in the adapter and are otherwise unchanged.
-//     *
-//     * If there are no [FlexAdapterSelectableItem]s in the adapter, this call has no effect.
-//     */
-//    open fun selectAllItems() {
-//        if (selectedItemCount >= itemCount) return
-//        for ((i, item) in items.withIndex()) {
-//            if (selectedItems.add(item)) {
-//                notifyItemChanged(i)
-//            }
-//        }
-//    }
+    /**
+     * Set all [FlexAdapterSelectableItem]s in this adapter to be deselected
+     *
+     * The deselected items will remain in the adapter and are otherwise unchanged.
+     *
+     * If there are no [FlexAdapterSelectableItem]s in the adapter, this call has no effect.
+     */
+    open fun deselectAllItems() {
+        if (selectedItems.isEmpty()) return
 
-//    /**
-//     * Remove all existing items and add the given items, using [DiffUtil] for update notifications.
-//     *
-//     * This is an optional version of [resetItems] that can give better update animations when you
-//     * have a list of items is slightly changed from the current list of items. It's useful if you
-//     * want to take the `items` list, modify it, and update the adapter with the changes.
-//     *
-//     * Note that this calls [DiffUtil.calculateDiff] and blocks until that function is complete, so
-//     * if you have more than around 1000 items in the adapter, you should consider calculating the
-//     * diff on a background thread. In that case, call the overload that takes a
-//     * [DiffUtil.DiffResult].
-//     *
-//     * @param items The new list of items that will be present in the adapter.
-//     * @param detectMoves If true, perform extra work to detect items that have moved in the list.
-//     * @param callback The callback to use. An instance of [FlexAdapterDiffUtilCallback] by default.
-//     */
-//    open fun resetItemsWithDiff(items: List<FlexAdapterItem<out RecyclerView.ViewHolder>>,
-//                                detectMoves: Boolean = false,
-//                                callback: DiffUtil.Callback = FlexAdapterDiffUtilCallback(this.items, items)) {
-//        if (this.items.isEmpty() || items.isEmpty()) return resetItems(items)
-//        resetItemsWithDiff(items, DiffUtil.calculateDiff(callback, detectMoves))
-//
-//    }
-//
-//    /**
-//     * Remove all existing items and add the given items, using [DiffUtil] for update notifications.
-//     *
-//     * Use this overload if you want to perform the calculations off of the main thread.
-//     *
-//     * Note that you must call this instead of [DiffUtil.DiffResult.dispatchUpdatesTo] directly, or
-//     * the internal state of the adapter will become inconsistent.
-//     *
-//     * Example usage with Kotlin, RxJava, and RxAndroid:
-//     * ```
-//     * Observable.fromCallable {
-//     *     DiffUtil.calculateDiff(FlexAdapterDiffUtilCallback(adapter.items(), newIems), false)
-//     * }.observeOn(Schedulers.computation())
-//     *         .subscribeOn(AndroidSchedulers.mainThread())
-//     *         .subscribe { adapter.resetItemsWithDiff(newItems, it) }
-//     * ```
-//     *
-//     * @param items The new list of items that will be present in the adapter.
-//     * @param diffResult The result that will dispatch updates to this adapter.
-//     */
-//    open fun resetItemsWithDiff(items: List<FlexAdapterItem<out RecyclerView.ViewHolder>>,
-//                                diffResult: DiffUtil.DiffResult) {
-//        resetWithoutNotification(items)
-//        diffResult.dispatchUpdatesTo(this)
-//    }
+        for ((i, item) in items.withIndex()) {
+            if (selectedItems.remove(item)) notifyItemChanged(i)
+            if (selectedItems.isEmpty()) return
+        }
+    }
+
+    /**
+     * Set all [FlexAdapterSelectableItem]s in this adapter to be selected
+     *
+     * The selected items will remain in the adapter and are otherwise unchanged.
+     *
+     * If there are no [FlexAdapterSelectableItem]s in the adapter, this call has no effect.
+     */
+    open fun selectAllItems() {
+        if (selectedItemCount >= itemCount) return
+        for ((i, item) in items.withIndex()) {
+            if (selectedItems.add(item)) {
+                notifyItemChanged(i)
+            }
+        }
+    }
 
     /**
      * Move an item from within the adapter.
@@ -331,11 +289,11 @@ open class FlexAdapter2<T : Any>(private val registerAutomatically: Boolean = tr
 
     private fun recordItems(range: IntRange) {
         for (i in range) {
-            (items[i] as? FlexAdapterItem<*>)?.let { recordItemType(it) }
+            (items[i] as? FlexAdapterItemBase<*>)?.let { recordItemType(it) }
         }
     }
 
-    private fun recordItemType(item: FlexAdapterItem<out RecyclerView.ViewHolder>) {
+    private fun recordItemType(item: FlexAdapterItemBase<RecyclerView.ViewHolder>) {
         val type = item.itemType
         if (!viewHolderFactoriesByItemType.containsKey(type)) {
             viewHolderFactoriesByItemType.put(type, item.viewHolderFactory())
@@ -343,16 +301,27 @@ open class FlexAdapter2<T : Any>(private val registerAutomatically: Boolean = tr
     }
 
     private fun markItemRemoved(item: Any?) {
-        if (item == null) return
-//        if (item is FlexAdapterSelectableItem<*>) {
-//            @Suppress("UNNECESSARY_NOT_NULL_ASSERTION") selectedItems.remove(item!!)
-//        }
+        selectedItems.remove(item)
     }
 
     private fun recordAllItems() {
         viewHolderFactoriesByItemType.clear()
-//        selectedItems.clear()
-        recordItems(0 until items.size)
+        if (selectedItems.isEmpty()) {
+            recordItems(items.indices)
+            return
+        }
+
+        if (items.isEmpty()) {
+            selectedItems.clear()
+            return
+        }
+
+        val newSelection = HashSet<T>(Math.min(selectedItems.size, items.size))
+        for (item in items) {
+            if (item is FlexAdapterItemBase<*>) recordItemType(item)
+            if (item in selectedItems) newSelection.add(item)
+        }
+        selectedItems = newSelection
     }
 
     /** @suppress */
@@ -368,15 +337,20 @@ open class FlexAdapter2<T : Any>(private val registerAutomatically: Boolean = tr
 
     /** @suppress */
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        items[position].let {
-            if (it is FlexAdapterItem<*>) it.bindErasedViewHolder(holder, position)
-            else itemAttrsByItemType[it.javaClass.hashCode()]!!.viewBinder(it, holder.itemView, position)
+        val item = items[position]
+        val attrs = attrsAt(position)
+        when (attrs) {
+            is FlexAdapterItem<*> -> attrs.bindErasedViewHolder(holder, position)
+            is PlainItemAttrs -> attrs.viewBinder(item, holder.itemView, position)
+            is FlexAdapterSelectableItem<*> -> attrs.bindErasedViewHolder(holder, item in selectedItems, position)
+            is SelectableItemAttrs -> attrs.viewBinder(item, holder.itemView, item in selectedItems, position)
+            else -> throw IllegalStateException("Cannot bind to $item")
         }
     }
 
     /** @suppress */
     override fun getItemViewType(position: Int): Int = items[position].let {
-        if (it is FlexAdapterItem<*>) it.itemType
+        if (it is FlexAdapterItemBase<*>) it.itemType
         else it.javaClass.hashCode()
     }
 
@@ -390,20 +364,30 @@ open class FlexAdapter2<T : Any>(private val registerAutomatically: Boolean = tr
     /** @suppress */
     open fun registerType(cls: KClass<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                           dragDirs: Int, viewBinder: (Any, View, Int) -> Unit) {
-        itemAttrsByItemType.put(cls.java.hashCode(), ItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+        itemAttrsByItemType.put(cls.java.hashCode(), PlainItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+    }
+
+    /** @suppress */
+    open fun registerType(cls: KClass<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
+                          dragDirs: Int, viewBinder: (Any, View, Boolean, Int) -> Unit) {
+        itemAttrsByItemType.put(cls.java.hashCode(), SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
     private fun attrsAt(index: Int): FlexAdapterItemAttrs = items[index].let {
-        Log.d("FlexAdapter", "attrsAt=$index, id=${it.javaClass.hashCode()}, it=$it, itemAttrsByItemType=$itemAttrsByItemType")
         if (it is FlexAdapterItemAttrs) it
         else itemAttrsByItemType[it.javaClass.hashCode()]!!
     }
 }
 
+// TODO more docs
+/** Register a type with a [FlexAdapter2] */
 inline fun <reified T> FlexAdapter2<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                 dragDirs: Int = 0, crossinline viewBinder: (T, View, Int) -> Unit) {
-    registerType(T::class, layout, span, swipeDirs, dragDirs) { any, view, i ->
-        viewBinder(any as T, view, i)
-    }
+    registerType(T::class, layout, span, swipeDirs, dragDirs) { any, v, i -> viewBinder(any as T, v, i) }
 }
 
+/** Register a selectable type with a [FlexAdapter2] */
+inline fun <reified T> FlexAdapter2<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
+                                                dragDirs: Int = 0, crossinline viewBinder: (T, View, Boolean, Int) -> Unit) {
+    registerType(T::class, layout, span, swipeDirs, dragDirs) { any, v, s, i -> viewBinder(any as T, v, s, i) }
+}
