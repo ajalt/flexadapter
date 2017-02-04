@@ -29,7 +29,7 @@ abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
      * Bind this item's data to its inflated view.
      *
      * @param itemView The view inflated from the [viewHolderFactory].
-     * @param position The index of this item in [FlexAdapter2.items]
+     * @param position The index of this item in [FlexAdapter.items]
      */
     abstract fun bindItemView(itemView: View, position: Int)
 
@@ -62,7 +62,7 @@ abstract class FlexAdapterSelectableExtensionItem(@LayoutRes val layoutRes: Int,
      *
      * @param itemView The view inflated from the [viewHolderFactory].
      * @param selected Whether or not this item is marked as selected.
-     * @param position The index of this item in [FlexAdapter2.items]
+     * @param position The index of this item in [FlexAdapter.items]
      */
     abstract fun bindItemView(itemView: View, selected: Boolean, position: Int)
 

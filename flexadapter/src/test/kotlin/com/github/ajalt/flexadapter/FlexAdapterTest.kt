@@ -8,10 +8,10 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class FlexAdapter2Test {
+class FlexAdapterTest {
     @Test
-    fun test() {
-        val adapter = FlexAdapter2<Any>()
+    fun `registered items can be added`() {
+        val adapter = FlexAdapter<Any>()
         with(adapter) {
             register<Int>(123) { value, view, i ->
                 println("Int")
