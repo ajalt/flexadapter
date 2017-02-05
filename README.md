@@ -20,7 +20,7 @@ The examples will be in Kotlin, but this library works just as well with Java.
 
 ```kotlin
 // Create the adapter
-val adapter = FlexAdapter()
+val adapter = FlexAdapter<Any>()
 recyclerView.adapter = adapter
 val layoutManager = GridLayoutManager(this, 3)
 // Add this line to enable per-item spans on GridLayoutManagers
@@ -53,15 +53,31 @@ mutable data in its layout. Since the items own the data and know how to bind
 it to a view holder, there are no intermediate data holder classes, no
 interfaces, and no casting to a base class and back.
 
+##### Using your own data models
+
+If you're using Kotlin, you don't even need your items to inherit from `FlexAdapterItem`. You can register a view binder for each type you'd like to add instead:
+
+```kotlin
+val adapter = FlexAdapter<String>()
+adapter.register<String>(R.layout.text_layout) { str, view, position ->
+    view.text_view.text = str
+}
+adapter.add("title")
+```
+
+You can use `register` in the same adapter that you add `FlexAdapterItem`s, pick whichever method you prefer.
+
 #### Then add some items:
 
 ```kotlin
-adapter.addItems(
+adapter.items.addAll(listOf(
     TextItem("Look at these pictures"),
     PictureItem(R.drawable.picture_1),
     PictureItem(R.drawable.picture_2)
-)
+))
 ```
+
+All structural changes to the `items` list automatically updated the `RecyclerView`. No need to call `noifyItemRangeAdded`.
 
 #### Update an existing item:
 
@@ -75,6 +91,30 @@ When you want to update an item, just change its data and notify the adapter tha
 
 That's it. No managing indices. No casting from interfaces or Object. 
 Just fast, simple code that does exactly what you want.
+
+### Item selection
+
+FlexAdapter can manage a set of selected items and pass the selection state to your view binders. Just inherit from `FlexAdapterSelectableItem` or use the `register` overload that takes the boolean selection state.
+
+```kotlin
+class PictureItem(@DrawableRes val imageRes: Int) :
+        FlexAdapterSelectableExtensionItem(R.layout.item_picture, dragDirs = ALL_DIRS) {
+    override fun bindItemView(itemView: View, selected:Boolean, position: Int) {
+        itemView.image_view.setImageResource(imageRes)
+        itemView.switch.selected = selected
+    }
+}
+
+adapter.register<String>(R.layout.item_text) { str, view, selected, position ->
+    view.text_view.text = str
+    view.switch.selected = selected
+}
+
+adapter.add(PictureItem(R.drawable.image))
+adapter.add("Title")
+
+adapter.selectItem("Title")
+```
 
 # API Documentation
 
@@ -103,7 +143,7 @@ adapter.addItems(
 view_pager.adapter = adapter
 ```
 
-That's all that's required to implement multiple layouts in a ViewPager. No need to create Fragments or manage lifecycles. The same classes can be used in both the `FlexAdapter` and `FlexPagerAdapter`. The `span`, `dragDirs`, and `swipeDirs` values will just be ignored on item added to a `FlexPagerAdapter`.
+That's all that's required to implement multiple layouts in a ViewPager. No need to create Fragments or manage lifecycles. The same classes can be used in both the `FlexAdapter` and `FlexPagerAdapter`. The `span`, `dragDirs`, and `swipeDirs` values will just be ignored on items added to a `FlexPagerAdapter`.
 
 You can see a sample that uses the `FlexPagerAdapter` [here](sample/src/main/kotlin/com/github/ajalt/flexadapter/sample/ViewPagerActivity.kt).
 
