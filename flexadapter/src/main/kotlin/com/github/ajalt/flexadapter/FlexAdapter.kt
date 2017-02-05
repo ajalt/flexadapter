@@ -443,14 +443,39 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 }
 
 // TODO make type aliases for the callbacks when Kotlin 1.1 is released
-// TODO more docs
-/** Register a type with a [FlexAdapter] */
+/**
+ * Register a type with a [FlexAdapter].
+ *
+ * This must be called for each type that you want to add to the adapter,
+ * unless the type is derived from [FlexAdapterItemBase].
+ *
+ * @param layout The layout resource to use for items of this type.
+ * @param span The span to use for items of this type when the layout manager supports it.
+ * @param swipeDirs The swipe direction flags to use with the [ItemTouchHelper].
+ * @param dragDirs The drag direction flags to use with the [ItemTouchHelper].
+ * @param viewBinder The implementation of [RecyclerView.Adapter.bindViewHolder] for items of this
+ * type. The parameters are the list item being bound, the view to bind to, and the index of the
+ * item in the list.
+ */
 inline fun <reified T> FlexAdapter<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                dragDirs: Int = 0, crossinline viewBinder: (T, View, Int) -> Unit) {
     registerType(T::class, layout, span, swipeDirs, dragDirs) { any, v, i -> viewBinder(any as T, v, i) }
 }
 
-/** Register a selectable type with a [FlexAdapter] */
+/**
+ * Register a selectable type with a [FlexAdapter].
+ *
+ * This is identical to the other overload of this function, except the binder function takes an
+ * extra parameter of whether or not the given item is currently marked as selected.
+ *
+ * @param layout The layout resource to use for items of this type.
+ * @param span The span to use for items of this type when the layout manager supports it.
+ * @param swipeDirs The swipe direction flags to use with the [ItemTouchHelper].
+ * @param dragDirs The drag direction flags to use with the [ItemTouchHelper].
+ * @param viewBinder The implementation of [RecyclerView.Adapter.bindViewHolder] for items of this
+ * type. The parameters are the list item being bound, the view to bind to, if the item is selected,
+ * and the index of the item in the list.
+ */
 inline fun <reified T> FlexAdapter<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                dragDirs: Int = 0, crossinline viewBinder: (T, View, Boolean, Int) -> Unit) {
     registerType(T::class, layout, span, swipeDirs, dragDirs) { any, v, s, i -> viewBinder(any as T, v, s, i) }
