@@ -242,6 +242,18 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     /**
+     * When true, any changes to [items] will automatically notify the adapter. (default true)
+     *
+     * You usually want to leave this enabled, but it can be useful to disable temporarily e.g. if
+     * you want to use `DiffUtil` to calculate a more specific set of notifications.
+     */
+    open var automaticallyNotifyOnItemChanges: Boolean
+        get() = listListener.enabled
+        set(value) {
+            listListener.enabled = value
+        }
+
+    /**
      * A SpanSizeLookup for grid layouts.
      *
      * If this adapter is attached to a RecyclerView with a grid layout, and any items in the
