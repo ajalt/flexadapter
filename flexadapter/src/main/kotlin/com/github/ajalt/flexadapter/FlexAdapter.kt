@@ -14,27 +14,10 @@ import com.github.ajalt.flexadapter.internal.ObservableList
 import java.util.*
 import kotlin.reflect.KClass
 
+/** @see FlexAdapterItemBase */
 internal interface FlexAdapterItemAttrs {
-    /**
-     * Return the number of columns that this item should span if laid out in a GridManager.
-     */
     val span: Int
-    /**
-     * If this item can be swiped away, it should return the direction flags it supports.
-     *
-     * A typical return value would be the bitwise OR of [ItemTouchHelper.LEFT]
-     * and [ItemTouchHelper.RIGHT]
-     *
-     * A return value of 0 indicates that this item cannot be swiped.
-     */
     val swipeDirs: Int
-    /**
-     * If this item can be dragged to reorder, it should return the direction flags it
-     * supports.
-     *
-     * A typical return value would be the bitwise OR of [ItemTouchHelper.LEFT]
-     * and [ItemTouchHelper.RIGHT]
-     */
     val dragDirs: Int
 }
 
@@ -105,6 +88,21 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     private var selectedItems: MutableSet<T> = HashSet()
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
     private val itemAttrsByItemType = HashMap<Int, ItemAttrs>()
+    /**
+     * The keys in [itemAttrsByItemType] that correspond to cached entries.
+     *
+     * This is necessary since we need to invalidate cached entries when a base class is
+     * re-registered.
+     */
+    private val cachedItemsTypes = HashSet<Int>()
+    /**
+     * A map of base class to a pair containing a callback to test for subclasses and the attrs.
+     *
+     * This is necessary so that you can [register] interfaces or base classes. The subclass check
+     * is only called once per subclass that wasn't directly registered, so it doesn't impact
+     * performance.
+     */
+    private val itemAttrsByBaseClass = HashMap<KClass<*>, Pair<(KClass<*>, Any) -> Boolean, ItemAttrs>>()
     private var callDragListenerOnDropOnly: Boolean = true
 
     /**
@@ -364,6 +362,10 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     private fun recordItems(range: IntRange) {
         for (i in range) {
             val item = items[i]
+            // Calling attrsOf here has two side effects: First, if the item is a subclass of a
+            // registered base class, it ensures that the subclass item type is recorded. Second, if
+            // the item hans't been registered, it will throw so that we fail when an item is added
+            // instead of bound.
             when (item) {
                 is FlexAdapterItemBase<*> -> recordItemType(item)
                 else -> attrsOf(item)
@@ -417,7 +419,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     /** @suppress */
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
-        val attrs = attrsAt(position)
+        val attrs = attrsOf(item)
         when (attrs) {
             is FlexAdapterItem<*> -> attrs.bindErasedViewHolder(holder, position)
             is PlainItemAttrs -> attrs.viewBinder(item, holder.itemView, position)
@@ -444,7 +446,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls.java)) {
             "Cannot register types inheriting from FlexAdapterItemBase."
         }
-        itemAttrsByItemType.put(cls.java.hashCode(), PlainItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+        putItemAttrs(cls, PlainItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
     /** @suppress */
@@ -453,15 +455,38 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls.java)) {
             "Cannot register types inheriting from FlexAdapterItemBase."
         }
-        itemAttrsByItemType.put(cls.java.hashCode(), SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+        putItemAttrs(cls, SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+    }
+
+    private fun putItemAttrs(cls: KClass<*>, itemAttrs: ItemAttrs) {
+        val predicate = { cls: KClass<*>, it: Any -> cls.java.isAssignableFrom(it.javaClass) }
+        if (itemAttrsByBaseClass.put(cls, predicate to itemAttrs) != null) {
+            invalidateItemTypeCache()
+        }
+        itemAttrsByItemType.put(cls.java.hashCode(), itemAttrs)
+    }
+
+    private fun invalidateItemTypeCache() {
+        for (itemType in cachedItemsTypes) {
+            itemAttrsByItemType.remove(itemType)
+        }
     }
 
     private fun attrsOf(it: T): FlexAdapterItemAttrs =
             if (it is FlexAdapterItemAttrs) it
             else itemAttrsByItemType[it.javaClass.hashCode()] ?:
+                    baseClassAttrsOf(it) ?:
                     throw IllegalArgumentException("Must register a type before adding it to the adapter.")
 
     private fun attrsAt(index: Int) = attrsOf(items[index])
+
+    private fun baseClassAttrsOf(item: T): FlexAdapterItemAttrs?
+            = itemAttrsByBaseClass.filter { it.value.first(it.key, item) }.values.firstOrNull()?.second?.apply {
+        // Cache this subclass to avoid future lookups.
+        val itemType = item.javaClass.hashCode()
+        itemAttrsByItemType.put(itemType, this)
+        cachedItemsTypes.add(itemType)
+    }
 
     private fun isSelectable(item: T) = item is FlexAdapterSelectableItem<*> || attrsOf(item) is SelectableItemAttrs
 }
