@@ -67,6 +67,11 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         fun onItemDragged(item: T, from: Int, to: Int)
     }
 
+    companion object {
+        /** Return the value that FlexAdapter will use as the itemType for a given item. */
+        fun defaultItemType(it: Any) = (it as? FlexAdapterItemBase<*>)?.itemType ?: it.javaClass.hashCode()
+    }
+
     private val listListener = object : ObservableList.OnListChangedCallback<ObservableList<T>> {
         var enabled = true
         override fun onChanged(sender: ObservableList<T>) = if (enabled) {
@@ -423,10 +428,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     /** @suppress */
-    override fun getItemViewType(position: Int): Int = items[position].let {
-        if (it is FlexAdapterItemBase<*>) it.itemType
-        else it.javaClass.hashCode()
-    }
+    override fun getItemViewType(position: Int): Int = defaultItemType(items[position])
 
     /** @suppress */
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
