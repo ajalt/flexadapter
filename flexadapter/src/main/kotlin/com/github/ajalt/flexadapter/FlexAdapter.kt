@@ -147,6 +147,9 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     /** The number of items currently selected. */
     open val selectedItemCount: Int get() = selectedItems.size
 
+    /** Return true if the given item is marked as selected */
+    open fun isSelected(item: T) = selectedItems.contains(item)
+
     /**
      * Mark an item as selected.
      *
