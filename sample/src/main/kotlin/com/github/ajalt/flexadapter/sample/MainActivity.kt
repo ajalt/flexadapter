@@ -13,14 +13,18 @@ import android.view.MenuItem
 import android.view.View
 import com.github.ajalt.flexadapter.FlexAdapter
 import com.github.ajalt.flexadapter.FlexAdapterExtensionItem
+import com.github.ajalt.flexadapter.register
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_picture.view.*
 import kotlinx.android.synthetic.main.item_text.view.*
 
-val COLUMNS = 3
-val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
-val ALL_DIRS = HORIZONTAL or VERTICAL
+const val COLUMNS = 3
+const val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+const val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+const val ALL_DIRS = HORIZONTAL or VERTICAL
+
+// You can have your data models inherit from FlexAdapterItem if you want to configure drag, swipe,
+// or span per-item, or if you need more control over the ViewHolder creation.
 
 /** A regular text item */
 class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
@@ -30,13 +34,6 @@ class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
     }
 }
 
-/** A large header text item */
-class HeaderItem(@StringRes var text: Int) :
-        FlexAdapterExtensionItem(R.layout.item_header, span = COLUMNS) {
-    override fun bindItemView(itemView: View, position: Int) {
-        itemView.text_view.setText(text)
-    }
-}
 
 /** An image that spans all three columns */
 class WidePictureItem(@DrawableRes val image: Int, dragDirs: Int = 0, swipeDirs: Int = 0, span: Int = COLUMNS) :
@@ -46,23 +43,16 @@ class WidePictureItem(@DrawableRes val image: Int, dragDirs: Int = 0, swipeDirs:
     }
 }
 
-/** A picture in a square frame layout */
-class SquarePictureItem(@DrawableRes val image: Int) :
-        FlexAdapterExtensionItem(R.layout.item_picture_square, dragDirs = ALL_DIRS) {
-    override fun bindItemView(itemView: View, position: Int) {
-        itemView.image_view.setImageResource(image)
-    }
-}
+// Or you can use any data model class (including primitives) if you use `FlexAdapter.register`.
 
-/** A divider that spans all columns */
-class DividerItem() : FlexAdapterExtensionItem(R.layout.item_divider, span = COLUMNS) {
-    override fun bindItemView(itemView: View, position: Int) {
-        // Nothing to bind for this item
-    }
-}
+data class HeaderItem(@StringRes var text: Int)
+data class SquarePictureItem(@DrawableRes val image: Int)
+object DIVIDER // It's fine to add the same item to the list more than once.
 
 class MainActivity : AppCompatActivity() {
-    val adapter = FlexAdapter()
+    // If you are only going to add a single type to the adapter, or if you have a common base type,
+    // you can use that as the type parameter instead of needing to cast from Any.
+    val adapter = FlexAdapter<Any>()
     var extraBurtsAdded = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -74,10 +64,20 @@ class MainActivity : AppCompatActivity() {
             spanSizeLookup = adapter.spanSizeLookup
         }
 
+        with(adapter) {
+            register<HeaderItem>(R.layout.item_header, span = COLUMNS) { it, v, i ->
+                v.text_view.setText(it.text)
+            }
+            register<SquarePictureItem>(R.layout.item_picture_square, dragDirs = ALL_DIRS) { it, v, i ->
+                v.image_view.setImageResource(it.image)
+            }
+            register<DIVIDER>(R.layout.item_divider, span = COLUMNS) { it, v, i -> }
+        }
+
         val header1 = HeaderItem(R.string.title_drag_all)
         val header2 = HeaderItem(R.string.title_swipe)
 
-        adapter.addItems(header1,
+        adapter.items.addAll(arrayOf(header1,
                 SquarePictureItem(R.drawable.burt_square_1),
                 SquarePictureItem(R.drawable.burt_square_2),
                 SquarePictureItem(R.drawable.burt_square_3),
@@ -89,7 +89,7 @@ class MainActivity : AppCompatActivity() {
                 SquarePictureItem(R.drawable.burt_square_9),
                 WidePictureItem(R.drawable.burt_wide_3, span = 2, dragDirs = ALL_DIRS),
                 SquarePictureItem(R.drawable.burt_square_10),
-                DividerItem(),
+                DIVIDER,
                 HeaderItem(R.string.title_drag_vertical),
                 TextItem(R.string.list_drag_01),
                 TextItem(R.string.list_drag_02, dragDirs = VERTICAL),
@@ -97,17 +97,17 @@ class MainActivity : AppCompatActivity() {
                 TextItem(R.string.list_drag_04, dragDirs = VERTICAL),
                 TextItem(R.string.list_drag_05, dragDirs = VERTICAL),
                 TextItem(R.string.list_drag_06, dragDirs = VERTICAL),
-                DividerItem(),
+                DIVIDER,
                 header2,
                 WidePictureItem(R.drawable.burt_wide_1, swipeDirs = HORIZONTAL),
                 HeaderItem(R.string.title_no_swipe),
                 WidePictureItem(R.drawable.burt_wide_2)
-        )
+        ))
 
         // Change the header text when the car picture is swiped away
         adapter.itemSwipedListener = {
             header2.text = R.string.title_post_swipe
-            adapter.notifyItemChanged(adapter.indexOf(header2))
+            adapter.notifyItemObjectChanged(header2)
         }
 
         // These will get added when the fab is pressed
@@ -121,9 +121,9 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(root_layout, R.string.snackbar_add_failure, Snackbar.LENGTH_SHORT).show()
             } else {
                 val item = extraBurts[extraBurtsAdded++]
-                adapter.insertItem(adapter.indexOf(header1) + 1, item)
+                adapter.items.add(adapter.items.indexOf(header1) + 1, item)
                 Snackbar.make(root_layout, R.string.snackbar_add_success, Snackbar.LENGTH_SHORT)
-                        .setAction(R.string.action_undo, { adapter.removeItem(item); extraBurtsAdded-- })
+                        .setAction(R.string.action_undo, { adapter.items.remove(item); extraBurtsAdded-- })
                         .show()
             }
         }

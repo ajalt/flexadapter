@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
 
 public class JavaMainActivity extends AppCompatActivity {
@@ -179,7 +180,8 @@ public class JavaMainActivity extends AppCompatActivity {
     @BindView(R.id.fab)
     FloatingActionButton fab;
 
-    private final FlexAdapter adapter = new FlexAdapter();
+
+    private final FlexAdapter<FlexAdapterItem> adapter = new FlexAdapter<>();
     private int extraBurtsAdded = 0;
 
     @Override public void onCreate(Bundle savedInstanceState) {
@@ -195,7 +197,7 @@ public class JavaMainActivity extends AppCompatActivity {
         final HeaderItem header1 = new HeaderItem(R.string.title_drag_all);
         final HeaderItem header2 = new HeaderItem(R.string.title_swipe);
 
-        adapter.addItems(
+        adapter.items().addAll(CollectionsKt.listOf(
                 header1,
                 new SquarePictureItem(R.drawable.burt_square_1),
                 new SquarePictureItem(R.drawable.burt_square_2),
@@ -219,12 +221,12 @@ public class JavaMainActivity extends AppCompatActivity {
                 new WidePictureItem(R.drawable.burt_wide_1, HORIZONTAL),
                 new HeaderItem(R.string.title_no_swipe),
                 new WidePictureItem(R.drawable.burt_wide_2, 0)
-        );
+        ));
 
         // Change the header text when the car picture is swiped away
         adapter.setItemSwipedListener(item -> {
             header2.text = R.string.title_post_swipe;
-            adapter.notifyItemChanged(adapter.indexOf(header2));
+            adapter.notifyItemChanged(adapter.items().indexOf(header2));
         });
 
         final FlexAdapterItem<?>[] extraBurts = {
@@ -238,10 +240,10 @@ public class JavaMainActivity extends AppCompatActivity {
                 Snackbar.make(rootView, R.string.snackbar_add_failure, Snackbar.LENGTH_SHORT).show();
             } else {
                 final FlexAdapterItem<?> item = extraBurts[extraBurtsAdded++];
-                adapter.insertItem(adapter.indexOf(header1) + 1, item);
+                adapter.items().add(adapter.items().indexOf(header1) + 1, item);
                 Snackbar.make(rootView, R.string.snackbar_add_success, Snackbar.LENGTH_SHORT)
                         .setAction(R.string.action_undo, v1 -> {
-                            adapter.removeItem(item);
+                            adapter.items().remove(item);
                             extraBurtsAdded--;
                         }).show();
             }

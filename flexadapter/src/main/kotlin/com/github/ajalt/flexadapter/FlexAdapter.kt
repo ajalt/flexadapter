@@ -107,7 +107,9 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      *
      * Changes to this list will automatically be reflected in the adapter.
      */
-    open val items: MutableList<T> = ObservableArrayList(listListener)
+    val items: MutableList<T> = ObservableArrayList(listListener)
+        @JvmName("items")
+        get
 
     /** Set or clear a listener that will be notified when an item is dismissed with a swipe. */
     open var itemSwipedListener: ((item: T) -> Unit)? = null
