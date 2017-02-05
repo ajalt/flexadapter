@@ -1,8 +1,6 @@
 package com.github.ajalt.flexadapter
 
-import android.support.v7.widget.RecyclerView
 import android.view.View
-import com.nhaarman.mockito_kotlin.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
@@ -37,36 +35,6 @@ class FlexAdapterTest {
         exception.expect(IllegalArgumentException::class.java)
         adapter.register<C>(0) { it, v, i -> }
         adapter.items.addAll(arrayOf(C(), C()))
-    }
-
-    @Test
-    fun `all changes to items cause notifications`() {
-        val adapter = FlexAdapter<C>()
-        val observer = mock<RecyclerView.AdapterDataObserver>()
-        adapter.registerAdapterDataObserver(observer)
-        adapter.items.add(C())
-        verify(observer).onItemRangeInserted(0, 1)
-        adapter.items.add(C())
-        verify(observer).onItemRangeInserted(1, 1)
-        adapter.items[0] = C()
-        verify(observer).onItemRangeChanged(eq(0), eq(1), anyOrNull())
-        adapter.items.removeAt(0)
-        verify(observer).onItemRangeRemoved(0, 1)
-    }
-
-    @Test
-    fun `disabling automatic notifications`() {
-        val adapter = FlexAdapter<C>()
-        val observer = mock<RecyclerView.AdapterDataObserver>()
-        adapter.registerAdapterDataObserver(observer)
-        adapter.items.add(C())
-        verify(observer).onItemRangeInserted(0, 1)
-        adapter.automaticallyNotifyOnItemChanges = false
-        adapter.items.add(C())
-        adapter.items[0] = C()
-        adapter.items.removeAt(0)
-        adapter.items.clear()
-        verifyNoMoreInteractions(observer)
     }
 }
 

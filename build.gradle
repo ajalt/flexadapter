@@ -12,6 +12,7 @@ buildscript {
 allprojects {
     repositories {
         mavenCentral()
+        jcenter()
     }
 }
 
@@ -39,7 +40,7 @@ ext {
     dokka = 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.13'
 
     // test dependencies
-    robolectric = 'org.robolectric:robolectric:3.1.4'
+    robolectric = 'org.robolectric:robolectric:3.2.2'
     junit = 'junit:junit:4.12'
     mockito = 'org.mockito:mockito-core:2.5.6'
     mockitoKotlin = 'com.nhaarman:mockito-kotlin:1.1.0'
