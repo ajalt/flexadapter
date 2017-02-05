@@ -405,12 +405,18 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     /** @suppress */
     open fun registerType(cls: KClass<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                           dragDirs: Int, viewBinder: (Any, View, Int) -> Unit) {
+        require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls.java)) {
+            "Cannot register types inheriting from FlexAdapterItemBase."
+        }
         itemAttrsByItemType.put(cls.java.hashCode(), PlainItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
     /** @suppress */
     open fun registerType(cls: KClass<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                           dragDirs: Int, viewBinder: (Any, View, Boolean, Int) -> Unit) {
+        require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls.java)) {
+            "Cannot register types inheriting from FlexAdapterItemBase."
+        }
         itemAttrsByItemType.put(cls.java.hashCode(), SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
