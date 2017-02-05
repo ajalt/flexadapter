@@ -358,7 +358,11 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private fun recordItems(range: IntRange) {
         for (i in range) {
-            (items[i] as? FlexAdapterItemBase<*>)?.let { recordItemType(it) }
+            val item = items[i]
+            when (item) {
+                is FlexAdapterItemBase<*> -> recordItemType(item)
+                else -> attrsOf(item)
+            }
         }
     }
 

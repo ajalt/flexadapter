@@ -30,6 +30,13 @@ class FlexAdapterTest {
     }
 
     @Test
+    fun `unregistered items cannot be added`() {
+        val adapter = FlexAdapter<Any>()
+        exception.expect(IllegalArgumentException::class.java)
+        adapter.items.add(1)
+    }
+
+    @Test
     fun `registering FlexAdapterItems raises an exception`() {
         val adapter = FlexAdapter<C>()
         exception.expect(IllegalArgumentException::class.java)
