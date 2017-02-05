@@ -30,7 +30,8 @@ class FlexAdapterSelectableItemTest {
 
     @Before
     fun setup() {
-        adapter.register<String>(0) { it, v, i -> }
+        adapter.register<Int>(0) { it, v, i -> }
+        adapter.register<String>(0) { it, v, selectable, i -> }
     }
 
     @Test
@@ -62,19 +63,22 @@ class FlexAdapterSelectableItemTest {
     }
 
     @Test
-    fun `selecting item updates count`() {
+    fun `FlexAdapterSelectableItems can be selected`() {
         adapter.items.addAll(listOf(selectableItem1, regularItem))
         assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
 
         adapter.selectItem(selectableItem1)
         assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
+    }
 
+    @Test
+    fun `registered objects can be selected`() {
         adapter.items.addAll(listOf(selectablePrimitive, regularPrimitive))
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
+        assertThat(adapter.selectedItems()).isEmpty()
 
         adapter.selectItem(selectablePrimitive)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectablePrimitive)
+        assertThat(adapter.selectedItems()).containsExactly(selectablePrimitive)
     }
 
     @Test
@@ -101,49 +105,64 @@ class FlexAdapterSelectableItemTest {
     fun `removing selected item updates count`() {
         adapter.items.add(selectableItem1)
         adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItemCount).isEqualTo(1)
         assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-        adapter.items.removeAt(0)
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
+        adapter.deselectItem(selectableItem1)
         assertThat(adapter.selectedItems()).isEmpty()
     }
 
     @Test
+    fun `selectItem ignores not selectable items`() {
+        adapter.items.addAll(listOf(regularItem, regularPrimitive))
+        adapter.selectItem(regularItem)
+        adapter.selectItem(regularPrimitive)
+        assertThat(adapter.selectedItems()).isEmpty()
+    }
+
+    @Test
+    fun `deselectItem ignores removed items`() {
+        adapter.items.addAll(listOf(selectableItem1, selectableItem2))
+        adapter.selectItem(selectableItem1)
+        adapter.selectItem(selectableItem2)
+        adapter.items.removeAt(0)
+        adapter.deselectItem(selectableItem1)
+
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
+    }
+
+    @Test
     fun `selectAllItems works with no selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, 3, "x"))
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
+        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
+        assertThat(adapter.selectedItems()).isEmpty()
         adapter.selectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, "x")
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
     }
 
     @Test
     fun `selectAllItems works with mixed selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
+        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
         adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItemCount).isEqualTo(1)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
         adapter.selectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
     }
 
     @Test
     fun `selectAllItems works with all selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
+        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
         adapter.selectItem(selectableItem1)
         adapter.selectItem(selectableItem2)
-        assertThat(adapter.selectedItemCount).isEqualTo(2)
+        adapter.selectItem(selectablePrimitive)
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
         adapter.selectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
     }
 
     @Test
     fun `deselectAllItems works with no selected items`() {
         adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
+        assertThat(adapter.selectedItems()).isEmpty()
+
         adapter.deselectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
     }
 
@@ -151,34 +170,20 @@ class FlexAdapterSelectableItemTest {
     fun `deselectAllItems works with mixed selected items`() {
         adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
         adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItemCount).isEqualTo(1)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
         adapter.deselectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
     }
 
     @Test
     fun `deselectAllItems works with all selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
+        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
         adapter.selectItem(selectableItem1)
         adapter.selectItem(selectableItem2)
-        assertThat(adapter.selectedItemCount).isEqualTo(2)
+        adapter.selectItem(selectablePrimitive)
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
         adapter.deselectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
         assertThat(adapter.selectedItems()).isEmpty()
-    }
-
-    @Test
-    fun `toggling selection of removed item does not affect adapter`() {
-        adapter.items.addAll(listOf(selectableItem1, selectableItem2))
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
-        adapter.items.removeAt(0)
-        adapter.deselectItem(selectableItem1)
-        adapter.selectItem(selectableItem1)
-
-        assertThat(adapter.selectedItemCount).isEqualTo(1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
     }
 
     @Test
@@ -198,18 +203,5 @@ class FlexAdapterSelectableItemTest {
         adapter.deselectItem(selectableItem1)
         adapter.deselectItem(selectableItem2)
         assertThat(adapter.selectedItems()).isEmpty()
-    }
-
-    @Test
-    fun `toggling selection of reset item does not affect adapter`() {
-        adapter.items.addAll(listOf(selectableItem1, selectableItem2))
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
-        adapter.items.clear()
-        adapter.items.addAll(listOf(selectableItem2))
-        adapter.deselectItem(selectableItem1)
-        adapter.selectItem(selectableItem1)
-
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
     }
 }

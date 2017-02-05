@@ -159,7 +159,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         val i = items.indexOf(item)
         require(i >= 0) { "Cannot select item that is not in adapter." }
 
-        if (item is FlexAdapterSelectableItem<*> || attrsAt(i) is SelectableItemAttrs) {
+        if (isSelectable(item)) {
             selectedItems.add(item)
             notifyItemChanged(i)
         }
@@ -179,7 +179,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     open fun deselectItem(item: T) {
         val i = items.indexOf(item)
         if (i < 0) return
-        if (item is FlexAdapterSelectableItem<*> || attrsAt(i) is SelectableItemAttrs) {
+        if (isSelectable(item)) {
             selectedItems.remove(item)
             notifyItemChanged(i)
         }
@@ -211,7 +211,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     open fun selectAllItems() {
         if (selectedItemCount >= itemCount) return
         for ((i, item) in items.withIndex()) {
-            if (selectedItems.add(item)) {
+            if (isSelectable(item) && selectedItems.add(item)) {
                 notifyItemChanged(i)
             }
         }
@@ -367,9 +367,10 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     private fun createViewHolderFromAttr(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val attrs = itemAttrsByItemType[viewType] ?:
+                throw IllegalArgumentException("Must register type before adding it to adapter.")
         return FlexAdapterExtensionItem.ViewHolder(
-                LayoutInflater.from(parent.context).inflate(
-                        itemAttrsByItemType[viewType]!!.layout, parent, false))
+                LayoutInflater.from(parent.context).inflate(attrs.layout, parent, false))
     }
 
     /** @suppress */
@@ -411,12 +412,17 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         itemAttrsByItemType.put(cls.java.hashCode(), SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
-    private fun attrsAt(index: Int): FlexAdapterItemAttrs = items[index].let {
-        if (it is FlexAdapterItemAttrs) it
-        else itemAttrsByItemType[it.javaClass.hashCode()]!!
-    }
+    private fun attrsOf(it: T): FlexAdapterItemAttrs =
+            if (it is FlexAdapterItemAttrs) it
+            else itemAttrsByItemType[it.javaClass.hashCode()] ?:
+                    throw IllegalArgumentException("Must register a type before adding it to the adapter.")
+
+    private fun attrsAt(index: Int) = attrsOf(items[index])
+
+    private fun isSelectable(item: T) = item is FlexAdapterSelectableItem<*> || attrsOf(item) is SelectableItemAttrs
 }
 
+// TODO make type aliases for the callbacks when Kotlin 1.1 is released
 // TODO more docs
 /** Register a type with a [FlexAdapter] */
 inline fun <reified T> FlexAdapter<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,

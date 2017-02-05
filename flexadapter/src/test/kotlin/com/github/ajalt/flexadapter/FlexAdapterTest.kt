@@ -1,6 +1,5 @@
 package com.github.ajalt.flexadapter
 
-import android.view.View
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -13,14 +12,8 @@ class FlexAdapterTest {
     fun `registered items can be added`() {
         val adapter = FlexAdapter<Any>()
         with(adapter) {
-            register<Int>(123) { value, view, i ->
-                println("Int")
-                view.findViewById(233)?.visibility = View.GONE
-            }
-            register<String>(456) { value, view, i ->
-                println("String")
-                view.findViewById(233)?.visibility = View.GONE
-            }
+            register<Int>(123) { value, view, i -> }
+            register<String>(456) { value, view, i -> }
         }
 
         adapter.items.addAll(arrayOf("asd", 1))
