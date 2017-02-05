@@ -111,6 +111,21 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         @JvmName("items")
         get
 
+    /**
+     * Clear the list of items and replace them with at new list.
+     *
+     * This is equivalent to calling `items.clear(); items.addAll(newItems)`, but doesn't cause as
+     * many update notifications to be emitted.
+     */
+    open fun resetItems(items: Collection<T>) {
+        listListener.enabled = false
+        this.items.clear()
+        this.items.addAll(items)
+        recordAllItems()
+        listListener.enabled = true
+        notifyDataSetChanged()
+    }
+
     /** Set or clear a listener that will be notified when an item is dismissed with a swipe. */
     open var itemSwipedListener: ((item: T) -> Unit)? = null
 
