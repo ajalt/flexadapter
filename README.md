@@ -157,7 +157,7 @@ repositories {
 }
 
 dependencies {
-   compile 'com.github.ajalt:flexadapter:2.0.0'
+   compile 'com.github.ajalt:flexadapter:2.0.1'
 }
 ```
 
