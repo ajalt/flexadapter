@@ -417,7 +417,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private fun createViewHolderFromAttr(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val attrs = itemAttrsByItemType[viewType] ?:
-                throw IllegalArgumentException("Must register type before adding it to adapter.")
+                throw unregisteredTypeError()
         return FlexAdapterExtensionItem.ViewHolder(
                 LayoutInflater.from(parent.context).inflate(attrs.layout, parent, false))
     }
@@ -486,7 +486,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
             if (it is FlexAdapterItemAttrs) it
             else itemAttrsByItemType[itemAttrsKey(it)] ?:
                     baseClassAttrsOf(it) ?:
-                    throw IllegalArgumentException("Must register a type before adding it to the adapter.")
+                    throw unregisteredTypeError()
 
     private fun attrsAt(index: Int) = attrsOf(items[index])
 
@@ -512,6 +512,10 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     private fun isSelectable(item: T) = item is FlexAdapterSelectableItem<*> || attrsOf(item) is SelectableItemAttrs
+
+    private fun unregisteredTypeError() = IllegalArgumentException(
+            "Must register type before adding it to adapter. " +
+                    "Registered types are: ${itemAttrsByBaseClass.keys.map { it.java.name }}")
 }
 
 // TODO make type aliases for the callbacks when Kotlin 1.1 is released
