@@ -123,6 +123,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      * This is equivalent to calling `items.clear(); items.addAll(newItems)`, but doesn't cause as
      * many update notifications to be emitted.
      */
+    @Synchronized
     open fun resetItems(items: Collection<T>) {
         listListener.enabled = false
         this.items.clear()
@@ -362,6 +363,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      */
     open fun notifyItemObjectChanged(item: T) = notifyItemChanged(items.indexOf(item))
 
+    @Synchronized
     private fun recordItems(range: IntRange) {
         for (i in range) {
             val item = items[i]
@@ -413,6 +415,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     /** @suppress */
+    @Synchronized
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return viewHolderFactoriesByItemType[viewType]?.invoke(parent) ?: createViewHolderFromAttr(parent, viewType)
     }
@@ -462,6 +465,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         putItemAttrs(cls, viewType, SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
+    @Synchronized
     private fun putItemAttrs(cls: KClass<*>, itemType: Int?, itemAttrs: ItemAttrs) {
         val predicate = { cls: KClass<*>, it: Any -> cls.java.isAssignableFrom(it.javaClass) }
         val reregistered = itemAttrsByBaseClass.put(cls, predicate to itemAttrs) != null
@@ -483,6 +487,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         }
     }
 
+    @Synchronized
     private fun attrsOf(it: T): FlexAdapterItemAttrs =
             if (it is FlexAdapterItemAttrs) it
             else itemAttrsByItemType[itemAttrsKey(it)] ?:
@@ -491,6 +496,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private fun attrsAt(index: Int) = attrsOf(items[index])
 
+    @Synchronized
     private fun itemAttrsKey(item: T): Int {
         val hashCode = item.javaClass.hashCode()
         // Check isEmpty first to avoid extra map reads in the common case of no custom itemTypes
@@ -498,6 +504,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         return customViewTypes[hashCode] ?: hashCode
     }
 
+    @Synchronized
     private fun baseClassAttrsOf(item: T): FlexAdapterItemAttrs? {
         val (cls, pair) = itemAttrsByBaseClass.filter { it.value.first(it.key, item) }.entries.firstOrNull() ?: return null
         // Cache this subclass to avoid future lookups.
