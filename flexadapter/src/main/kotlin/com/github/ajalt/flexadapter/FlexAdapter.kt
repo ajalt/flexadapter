@@ -81,10 +81,12 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private var itemDraggedListener: ((T, Int, Int) -> Unit)? = null
     private var selectedItems: MutableSet<T> = HashSet()
+    /** A map of item type to factories created from [FlexAdapterItemBase.viewHolderFactory] */
     private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
     /**
-     * A map of item type to [ItemAttrs]. The key is either the default item type, or a custom view
-     * type if one is registered.
+     * A map of item type to [ItemAttrs].
+     *
+     * The key is either the default item type, or a custom view type if one is registered.
      */
     private val itemAttrsByItemType = HashMap<Int, ItemAttrs>()
     /**
@@ -416,8 +418,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     private fun createViewHolderFromAttr(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val attrs = itemAttrsByItemType[viewType] ?:
-                throw unregisteredTypeError()
+        val attrs = itemAttrsByItemType[viewType] ?: throw unregisteredTypeError()
         return FlexAdapterExtensionItem.ViewHolder(
                 LayoutInflater.from(parent.context).inflate(attrs.layout, parent, false))
     }
@@ -470,9 +471,9 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         if (itemType != null) {
             customViewTypes.put(hashCode, itemType)
         }
-        // We need to record all items again so that their view types are updated to the new custom
-        // type.
-        if (reregistered && itemType != null) recordAllItems()
+
+        // We need to record all items again so that their view types added back to the cache
+        if (reregistered) recordAllItems()
     }
 
     private fun invalidateItemTypeCache() {
