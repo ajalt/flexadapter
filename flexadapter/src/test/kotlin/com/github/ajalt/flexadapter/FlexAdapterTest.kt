@@ -6,7 +6,7 @@ import android.widget.FrameLayout
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
-import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Java6Assertions.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
@@ -42,8 +42,8 @@ class FlexAdapterTest {
     @Test
     fun `registered items can be added`() {
         val adapter = FlexAdapter<Any>()
-        adapter.register<Int>(layout) { _, _, _ -> }
-        adapter.register<String>(layout) { _, _, _ -> }
+        adapter.register<Int>(layout)
+        adapter.register<String>(layout)
 
         adapter.items.addAll(arrayOf("asd", 1))
         bindViewAt(adapter, 0)
