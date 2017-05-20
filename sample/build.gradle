@@ -5,24 +5,20 @@ apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
     dependencies {
-        classpath rootProject.ext.kotlinGradle
-        classpath rootProject.ext.androidApt
-        classpath rootProject.ext.gradleRetrolambda
+        classpath deps.androidApt
+        classpath deps.gradleRetrolambda
     }
 }
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
         applicationId 'com.github.ajalt.flexadapter.sample'
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
         versionCode Integer.parseInt(project.VERSION_CODE)
         versionName project.VERSION_NAME
     }
@@ -45,13 +41,14 @@ android {
 dependencies {
     compile project(':flexadapter')
 
-    compile rootProject.ext.supportV7
-    compile rootProject.ext.supportDesign
-    compile rootProject.ext.supportRecyclerView
-    compile rootProject.ext.supportAnnotations
-    compile rootProject.ext.kotlinStdlib
-    compile rootProject.ext.butterknife
-    apt rootProject.ext.butterknifeCompiler
+    compile deps.supportV7
+    compile deps.supportDesign
+    compile deps.supportRecyclerView
+    compile deps.supportAnnotations
+    compile deps.kotlinStdlib
+    compile deps.butterknife
 
-    retrolambdaConfig rootProject.ext.retrolambda
+    apt deps.butterknifeCompiler
+
+    retrolambdaConfig deps.retrolambda
 }

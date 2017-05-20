@@ -1,26 +1,20 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'org.jetbrains.dokka-android'
+//apply plugin: 'org.jetbrains.dokka-android'
 apply plugin: 'com.github.dcendents.android-maven'
 
 buildscript {
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
     dependencies {
-        classpath rootProject.ext.kotlinGradle
-        classpath rootProject.ext.dokka
+        classpath deps.buildscript.dokka
     }
 }
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
-    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdkVersion versions.minSdk
         versionCode Integer.parseInt(project.VERSION_CODE)
         versionName project.VERSION_NAME
     }
@@ -32,16 +26,16 @@ android {
 }
 
 dependencies {
-    compile rootProject.ext.supportV7
-    compile rootProject.ext.supportRecyclerView
-    compile rootProject.ext.supportAnnotations
-    compile rootProject.ext.kotlinStdlib
+    compile deps.supportV7
+    compile deps.supportRecyclerView
+    compile deps.supportAnnotations
+    compile deps.kotlinStdlib
 
-    testCompile rootProject.ext.robolectric
-    testCompile rootProject.ext.junit
-    testCompile rootProject.ext.mockito
-    testCompile (rootProject.ext.mockitoKotlin) { exclude module: 'kotlin-stdlib' }
-    testCompile rootProject.ext.assertJ
+    testCompile deps.robolectric
+    testCompile deps.junit
+    testCompile deps.mockito
+    testCompile (deps.mockitoKotlin) { exclude module: 'kotlin-stdlib' }
+    testCompile deps.assertJ
 }
 
 task sourcesJar(type: Jar) {
