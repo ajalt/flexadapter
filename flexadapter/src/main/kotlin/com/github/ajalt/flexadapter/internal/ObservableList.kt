@@ -1,8 +1,11 @@
 package com.github.ajalt.flexadapter.internal
 
+import android.os.Build
 import android.support.annotation.RequiresApi
 import java.util.*
+import java.util.function.Consumer
 import java.util.function.Predicate
+import java.util.function.UnaryOperator
 
 /** A list interface that notifies a listener when it's contents change. */
 internal interface ObservableList<T> : MutableList<T> {
@@ -61,12 +64,28 @@ internal class ObservableArrayList<T>(var listener: ObservableList.OnListChanged
     override fun retainAll(elements: Collection<T>): Boolean
             = super.retainAll(elements).apply { notifyAllChange() }
 
-    @RequiresApi(24)
-    override fun removeIf(filter: Predicate<in T>?): Boolean
-            = super.removeIf(filter).apply { notifyAllChange() }
-
     override fun removeRange(fromIndex: Int, toIndex: Int)
             = super.removeRange(fromIndex, toIndex).apply { notifyRangeRemove(fromIndex, toIndex - fromIndex) }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun forEach(action: Consumer<in T>?) = super<ArrayList>.forEach(action)
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun spliterator(): Spliterator<T> {
+        return super<ArrayList>.spliterator()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun replaceAll(operator: UnaryOperator<T>)
+            = super<ArrayList>.replaceAll(operator).apply { notifyAllChange() }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun sort(c: Comparator<in T>?)
+            = super<ArrayList>.sort(c).apply { notifyAllChange() }
+
+    @RequiresApi(Build.VERSION_CODES.N)
+    override fun removeIf(filter: Predicate<in T>): Boolean
+            = super<ArrayList>.removeIf(filter).apply { notifyAllChange() }
 
     private fun notifyAdd(start: Int, count: Int) = listener?.onItemRangeInserted(this, start, count)
     private fun notifyRangeRemove(start: Int, count: Int) = listener?.onItemRangeRemoved(this, start, count)
