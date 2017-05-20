@@ -30,8 +30,8 @@ class FlexAdapterSelectableItemTest {
 
     @Before
     fun setup() {
-        adapter.register<Int>(0) { it, v, i -> }
-        adapter.register<String>(0) { it, v, selectable, i -> }
+        adapter.register<Int>(0)
+        adapter.registerSelectable<String>(0)
     }
 
     @Test

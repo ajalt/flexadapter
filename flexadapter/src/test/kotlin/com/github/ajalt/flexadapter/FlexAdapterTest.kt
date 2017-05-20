@@ -42,8 +42,8 @@ class FlexAdapterTest {
     @Test
     fun `registered items can be added`() {
         val adapter = FlexAdapter<Any>()
-        adapter.register<Int>(layout) { value, view, i -> }
-        adapter.register<String>(layout) { value, view, i -> }
+        adapter.register<Int>(layout) { _, _, _ -> }
+        adapter.register<String>(layout) { _, _, _ -> }
 
         adapter.items.addAll(arrayOf("asd", 1))
         bindViewAt(adapter, 0)
@@ -53,8 +53,8 @@ class FlexAdapterTest {
     @Test
     fun `multiply registered classes can be added`() {
         val adapter = FlexAdapter<O>()
-        adapter.register<O>(layout) { value, view, i -> }
-        adapter.register<O>(layout) { value, view, i -> }
+        adapter.register<O>(layout)
+        adapter.register<O>(layout)
 
         adapter.items.addAll(listOf(O2(), O()))
         bindViewAt(adapter, 0)
@@ -64,7 +64,7 @@ class FlexAdapterTest {
     @Test
     fun `registered subclasses can be added`() {
         val adapter = FlexAdapter<I>()
-        adapter.register<I>(layout) { value, view, i -> }
+        adapter.register<I>(layout)
 
         adapter.items.addAll(listOf(O2(), O()))
         bindViewAt(adapter, 0)
@@ -82,7 +82,7 @@ class FlexAdapterTest {
     fun `registering FlexAdapterItems raises an exception`() {
         val adapter = FlexAdapter<C>()
         exception.expect(IllegalArgumentException::class.java)
-        adapter.register<C>(layout) { it, v, i -> }
+        adapter.register<C>(layout)
         adapter.items.addAll(arrayOf(C(), C()))
     }
 
@@ -91,13 +91,13 @@ class FlexAdapterTest {
         val adapter = FlexAdapter<I>()
         val cb1: Runnable = mock()
         val cb2: Runnable = mock()
-        adapter.register<I>(layout) { it, v, i -> cb1.run() }
+        adapter.register<I>(layout) { _, _, _ -> cb1.run() }
 
         adapter.items.addAll(listOf(O2(), O()))
         bindViewAt(adapter, 0)
         verify(cb1).run()
 
-        adapter.register<I>(layout) { it, v, i -> cb2.run() }
+        adapter.register<I>(layout) { _, _, _ -> cb2.run() }
 
         bindViewAt(adapter, 0)
         verifyNoMoreInteractions(cb1)
@@ -107,7 +107,7 @@ class FlexAdapterTest {
     @Test
     fun `custom viewTypes are returned`() {
         val adapter = FlexAdapter<String>()
-        adapter.register<String>(layout, viewType = 123) { value, view, i -> }
+        adapter.register<String>(layout, viewType = 123)
         adapter.items.add("x")
         assertThat(adapter.getItemViewType(0)).isEqualTo(123)
     }
@@ -115,18 +115,18 @@ class FlexAdapterTest {
     @Test
     fun `multiple registration changes viewTypes`() {
         val adapter = FlexAdapter<String>()
-        adapter.register<String>(layout, viewType = 123) { value, view, i -> }
+        adapter.register<String>(layout, viewType = 123)
         adapter.items.add("x")
-        adapter.register<String>(layout, viewType = 789) { value, view, i -> }
+        adapter.register<String>(layout, viewType = 789)
         assertThat(adapter.getItemViewType(0)).isEqualTo(789)
     }
 
     @Test
     fun `multiple base class registration changes viewTypes`() {
         val adapter = FlexAdapter<I>()
-        adapter.register<I>(layout, viewType = 123) { value, view, i -> }
+        adapter.register<I>(layout, viewType = 123)
         adapter.items.add(O())
-        adapter.register<I>(layout, viewType = 789) { value, view, i -> }
+        adapter.register<I>(layout, viewType = 789)
         assertThat(adapter.getItemViewType(0)).isEqualTo(789)
     }
 }

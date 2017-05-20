@@ -65,13 +65,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         with(adapter) {
-            register<HeaderItem>(R.layout.item_header, span = COLUMNS) { it, v, i ->
+            register<HeaderItem>(R.layout.item_header, span = COLUMNS) { it, v, _ ->
                 v.text_view.setText(it.text)
             }
-            register<SquarePictureItem>(R.layout.item_picture_square, dragDirs = ALL_DIRS) { it, v, i ->
+            register<SquarePictureItem>(R.layout.item_picture_square, dragDirs = ALL_DIRS) { it, v, _ ->
                 v.image_view.setImageResource(it.image)
             }
-            register<DIVIDER>(R.layout.item_divider, span = COLUMNS) { it, v, i -> }
+            register<DIVIDER>(R.layout.item_divider, span = COLUMNS)
         }
 
         val header1 = HeaderItem(R.string.title_drag_all)

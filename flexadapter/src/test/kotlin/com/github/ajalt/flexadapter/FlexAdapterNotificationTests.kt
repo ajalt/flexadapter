@@ -17,7 +17,7 @@ class FlexAdapterNotificationTests {
 
     @Before
     fun setup() {
-        adapter.register<Int>(0) { it, v, i -> }
+        adapter.register<Int>(0)
         adapter.registerAdapterDataObserver(observer)
     }
 
