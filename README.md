@@ -1,9 +1,9 @@
 <h1 align="center">
-	<img src="web/wordmark.png">
+	<img src=".web/wordmark.png">
 </h1>
 
 <div align="center">
-	<img src="web/sample.gif">
+	<img src=".web/sample.gif">
 </div>
 
 ### Define and coordinate multiple layouts in a RecyclerView or ViewPager without boilerplate.
