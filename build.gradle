@@ -14,7 +14,7 @@ buildscript {
     ext.deps = [
             buildscript        : [
                     kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-                    dokka : 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.13',
+                    dokka : 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.14',
             ],
 
             // library dependencies
