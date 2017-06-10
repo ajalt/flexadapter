@@ -25,13 +25,9 @@ internal interface FlexAdapterItemAttrs {
     val dragDirs: Int
 }
 
-private interface ItemAttrs : FlexAdapterItemAttrs {
-    val layout: Int
-}
-
-private data class PlainItemAttrs(@LayoutRes override val layout: Int, override val span: Int,
-                                  override val swipeDirs: Int, override val dragDirs: Int,
-                                  val viewBinder: (Any, View, Int) -> Unit) : ItemAttrs
+private data class ItemAttrs(@LayoutRes val layout: Int, override val span: Int,
+                             override val swipeDirs: Int, override val dragDirs: Int,
+                             val viewBinder: (Any, View, Int) -> Unit) : FlexAdapterItemAttrs
 
 /**
  * A [RecyclerView.Adapter] that handles multiple item layouts with per-item swipe, drag, and span
@@ -303,7 +299,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         }
     }
 
-    private fun markItemRemoved(item:T) {
+    private fun markItemRemoved(item: T) {
         itemRemovedListener?.itemRemoved(item)
     }
 
@@ -336,7 +332,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         val attrs = attrsOf(item)
         when (attrs) {
             is FlexAdapterItem<*> -> attrs.bindErasedViewHolder(holder, position)
-            is PlainItemAttrs -> attrs.viewBinder(item, holder.itemView, position)
+            is ItemAttrs -> attrs.viewBinder(item, holder.itemView, position)
             else -> throw IllegalStateException("Cannot bind to $item")
         }
     }
@@ -354,7 +350,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         require(!FlexAdapterItem::class.java.isAssignableFrom(cls)) {
             "Cannot register types inheriting from FlexAdapterItem."
         }
-        putItemAttrs(cls, viewType, PlainItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+        putItemAttrs(cls, viewType, ItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
     @Synchronized
