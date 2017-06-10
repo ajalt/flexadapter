@@ -44,33 +44,3 @@ abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
     /** A ViewHolder that relies on kotlin android extensions for caching. */
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 }
-
-
-/**
- * A selectable adapter item that's designed for use with the Kotlin Extensions for Android.
- *
- * @see FlexAdapterExtensionItem
- * @see FlexAdapterSelectableItem
- */
-abstract class FlexAdapterSelectableExtensionItem(@LayoutRes val layoutRes: Int,
-                                                  override val dragDirs: Int = 0,
-                                                  override val swipeDirs: Int = 0,
-                                                  override val span: Int = 1) :
-        FlexAdapterSelectableItem<FlexAdapterExtensionItem.ViewHolder>() {
-    /**
-     * Bind this item's data to its inflated view.
-     *
-     * @param itemView The view inflated from the [viewHolderFactory].
-     * @param selected Whether or not this item is marked as selected.
-     * @param position The index of this item in [FlexAdapter.items]
-     */
-    abstract fun bindItemView(itemView: View, selected: Boolean, position: Int)
-
-    override fun viewHolderFactory(): (ViewGroup) -> FlexAdapterExtensionItem.ViewHolder = {
-        FlexAdapterExtensionItem.ViewHolder(LayoutInflater.from(it.context).inflate(layoutRes, it, false))
-    }
-
-    override final fun bindViewHolder(holder: FlexAdapterExtensionItem.ViewHolder, selected: Boolean, position: Int) {
-        bindItemView(holder.itemView, selected, position)
-    }
-}

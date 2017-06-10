@@ -4,7 +4,8 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.ViewGroup
 
-abstract class FlexAdapterItemBase<out VH : RecyclerView.ViewHolder> : FlexAdapterItemAttrs {
+/** An item that holds data for binding in a [FlexAdapter]. */
+abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAttrs {
     /**
      * Return a function that creates a ViewHolder for items for items whose [.itemType] matches this one.
      *
@@ -48,10 +49,7 @@ abstract class FlexAdapterItemBase<out VH : RecyclerView.ViewHolder> : FlexAdapt
      * and [ItemTouchHelper.RIGHT]
      */
     override val dragDirs: Int get() = 0
-}
 
-/** An item that holds data for binding in a [FlexAdapter]. */
-abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemBase<VH>() {
     /**
      * Bind the contents of this item to a view holder.
      *
@@ -70,33 +68,3 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemBa
         bindViewHolder(holder as VH, position)
     }
 }
-
-/**
- * An item that has a selection state.
- *
- * The [FlexAdapter] will keep track of items of this type, which you can access from functions like
- * [FlexAdapter.selectedItems] and [FlexAdapter.selectAllItems].
- *
- * Note that if you want the item to update its view, you will still need to call
- * [FlexAdapter.notifyItemChanged] or similar as usual.
- */
-abstract class FlexAdapterSelectableItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemBase<VH>() {
-    /**
-     * Bind the contents of this item to a view holder.
-     *
-     * The bound values should be fields on the item instance doing the binding.
-     *
-     * @see RecyclerView.Adapter.bindViewHolder
-     */
-    abstract fun bindViewHolder(holder: VH, selected: Boolean, position: Int)
-
-    /**
-     * Called by the [FlexAdapter] to work around Java's type erasure
-     * @suppress
-     */
-    @Suppress("UNCHECKED_CAST")
-    internal fun bindErasedViewHolder(holder: RecyclerView.ViewHolder, selected: Boolean, position: Int) {
-        bindViewHolder(holder as VH, selected, position)
-    }
-}
-

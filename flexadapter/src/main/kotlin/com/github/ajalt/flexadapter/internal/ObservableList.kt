@@ -9,16 +9,16 @@ import java.util.function.UnaryOperator
 
 /** A list interface that notifies a listener when it's contents change. */
 internal interface ObservableList<T> : MutableList<T> {
-    interface OnListChangedCallback<in T : ObservableList<*>> {
-        fun onChanged(sender: T)
-        fun onItemChanged(sender: T, index: Int, oldItem: Any?)
-        fun onItemRangeInserted(sender: T, start: Int, count: Int)
-        fun onItemRangeRemoved(sender: T, start: Int, count: Int)
-        fun onItemRemoved(sender: T, index: Int, item: Any?)
+    interface OnListChangedCallback<T> {
+        fun onChanged(sender: ObservableList<T>)
+        fun onItemChanged(sender: ObservableList<T>, index: Int, oldItem: T)
+        fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int)
+        fun onItemRangeRemoved(sender: ObservableList<T>, start: Int, count: Int)
+        fun onItemRemoved(sender: ObservableList<T>, index: Int, item:T)
     }
 }
 
-internal class ObservableArrayList<T>(var listener: ObservableList.OnListChangedCallback<ObservableList<T>>?)
+internal class ObservableArrayList<T>(var listener: ObservableList.OnListChangedCallback<T>?)
     : ArrayList<T>(), ObservableList<T> {
 
     override fun add(element: T): Boolean = super.add(element).apply { notifyAdd(size - 1, 1) }
@@ -89,8 +89,8 @@ internal class ObservableArrayList<T>(var listener: ObservableList.OnListChanged
 
     private fun notifyAdd(start: Int, count: Int) = listener?.onItemRangeInserted(this, start, count)
     private fun notifyRangeRemove(start: Int, count: Int) = listener?.onItemRangeRemoved(this, start, count)
-    private fun notifyRemove(index: Int, item: Any?) = listener?.onItemRemoved(this, index, item)
-    private fun notifyChange(index: Int, oldItem: Any?) = listener?.onItemChanged(this, index, oldItem)
+    private fun notifyRemove(index: Int, item: T) = listener?.onItemRemoved(this, index, item)
+    private fun notifyChange(index: Int, oldItem: T) = listener?.onItemChanged(this, index, oldItem)
     private fun notifyAllChange() = listener?.onChanged(this)
 }
 

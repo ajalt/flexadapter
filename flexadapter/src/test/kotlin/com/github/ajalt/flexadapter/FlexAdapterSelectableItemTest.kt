@@ -2,235 +2,174 @@ package com.github.ajalt.flexadapter
 
 import android.view.View
 import org.assertj.core.api.Java6Assertions.assertThat
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-class TestRegularItem(val tag: String = "") : FlexAdapterExtensionItem(0) {
+class TestItem(val tag: String = "") : FlexAdapterExtensionItem(0) {
     override fun toString() = super.toString() + ":$tag"
     override fun bindItemView(itemView: View, position: Int) = Unit
-}
-
-class TestSelectableItem(val tag: String = "") : FlexAdapterSelectableExtensionItem(0) {
-    override fun toString() = super.toString() + ":$tag"
-    override fun bindItemView(itemView: View, selected: Boolean, position: Int) = Unit
 }
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class FlexAdapterSelectableItemTest {
-   private val adapter = FlexAdapter<Any>()
-   private val selectablePrimitive = "selectable"
-   private val regularPrimitive = 3
-   private val regularItem = TestRegularItem("regularItem")
-   private val selectableItem1 = TestSelectableItem("selectableItem1")
-   private val selectableItem2 = TestSelectableItem("selectableItem2")
-
-    @Before
-    fun setup() {
-        adapter.register<Int>(0)
-        adapter.registerSelectable<String>(0)
+    val adapter = FlexAdapter<Any>().apply {
+        register<Int>(0)
+        register<String>(0)
     }
-
-    @Test
-    fun `selectable items can be mixed with regular items`() {
-        adapter.items.addAll(listOf(
-                regularItem, selectableItem1, selectablePrimitive, regularPrimitive, selectableItem2))
-        assertThat(adapter.items).containsExactly(
-                regularItem, selectableItem1, selectablePrimitive, regularPrimitive, selectableItem2)
-    }
+    val tracker = adapter.selectionTracker()
+    val stringItem = "selectable"
+    val intItem = 3
+    val intItem2 = 7
+    val testItem = TestItem("regularItem")
 
     @Test
     fun `selection count is zero when empty`() {
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
-    }
-
-    @Test
-    fun `selection count is zero when only regular items are present`() {
-        adapter.items.addAll(listOf(regularItem, regularPrimitive))
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
+        assertThat(tracker.selectedItemCount).isEqualTo(0)
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `selection count is zero when only unselected items are present`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, regularPrimitive, selectablePrimitive))
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        assertThat(tracker.selectedItemCount).isEqualTo(0)
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `FlexAdapterSelectableItems can be selected`() {
-        adapter.items.addAll(listOf(selectableItem1, regularItem))
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(intItem, testItem))
+        assertThat(tracker.selectedItemCount).isEqualTo(0)
+        assertThat(tracker.selectedItems()).isEmpty()
 
-        adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-    }
-
-    @Test
-    fun `selectItemAt selects correct items`() {
-        adapter.items.addAll(listOf(selectableItem1, regularItem, selectableItem2))
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
-
-        adapter.selectItemAt(0)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-        adapter.selectItemAt(1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-        adapter.selectItemAt(2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
-    }
-
-    @Test
-    fun `deselectItemAt deselects correct items`() {
-        adapter.items.addAll(listOf(selectableItem1, regularItem, selectableItem2))
-        adapter.selectAllItems()
-        assertThat(adapter.selectedItemCount).isEqualTo(2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
-
-        adapter.deselectItemAt(0)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
-        adapter.deselectItemAt(1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
-        adapter.deselectItemAt(2)
-        assertThat(adapter.selectedItems()).isEmpty()
+        tracker.selectItem(intItem)
+        assertThat(tracker.selectedItems()).containsExactly(intItem)
     }
 
     @Test
     fun `registered objects can be selected`() {
-        adapter.items.addAll(listOf(selectablePrimitive, regularPrimitive))
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(stringItem, intItem))
+        assertThat(tracker.selectedItems()).isEmpty()
 
-        adapter.selectItem(selectablePrimitive)
-        assertThat(adapter.selectedItems()).containsExactly(selectablePrimitive)
+        tracker.selectItem(stringItem)
+        assertThat(tracker.selectedItems()).containsExactly(stringItem)
     }
 
     @Test
     fun `deselecting item updates count`() {
-        adapter.items.addAll(listOf(selectableItem1, regularItem))
-        adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItemCount).isEqualTo(1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
+        adapter.items.addAll(listOf(intItem2, testItem))
+        tracker.selectItem(intItem2)
+        assertThat(tracker.selectedItemCount).isEqualTo(1)
+        assertThat(tracker.selectedItems()).containsExactly(intItem2)
 
-        adapter.deselectItem(selectableItem1)
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
+        tracker.deselectItem(intItem2)
+        assertThat(tracker.selectedItemCount).isEqualTo(0)
+        assertThat(tracker.selectedItems()).isEmpty()
 
-        adapter.items.addAll(listOf(selectablePrimitive, regularPrimitive))
-        adapter.selectItem(selectablePrimitive)
-        assertThat(adapter.selectedItems()).containsExactly(selectablePrimitive)
+        adapter.items.addAll(listOf(stringItem, intItem))
+        tracker.selectItem(stringItem)
+        assertThat(tracker.selectedItems()).containsExactly(stringItem)
 
-        adapter.deselectItem(selectablePrimitive)
-        assertThat(adapter.selectedItemCount).isEqualTo(0)
-        assertThat(adapter.selectedItems()).isEmpty()
+        tracker.deselectItem(stringItem)
+        assertThat(tracker.selectedItemCount).isEqualTo(0)
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `removing selected item updates count`() {
-        adapter.items.add(selectableItem1)
-        adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-        adapter.deselectItem(selectableItem1)
-        assertThat(adapter.selectedItems()).isEmpty()
-    }
-
-    @Test
-    fun `selectItem ignores not selectable items`() {
-        adapter.items.addAll(listOf(regularItem, regularPrimitive))
-        adapter.selectItem(regularItem)
-        adapter.selectItem(regularPrimitive)
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.add(intItem)
+        tracker.selectItem(intItem)
+        assertThat(tracker.selectedItems()).containsExactly(intItem)
+        tracker.deselectItem(intItem)
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `deselectItem ignores removed items`() {
-        adapter.items.addAll(listOf(selectableItem1, selectableItem2))
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
+        adapter.items.addAll(listOf(intItem, intItem2))
+        tracker.selectItem(intItem)
+        tracker.selectItem(intItem2)
         adapter.items.removeAt(0)
-        adapter.deselectItem(selectableItem1)
+        tracker.deselectItem(intItem)
 
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
+        assertThat(tracker.selectedItems()).containsExactly(intItem2)
     }
 
     @Test
     fun `selectAllItems works with no selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
-        assertThat(adapter.selectedItems()).isEmpty()
-        adapter.selectAllItems()
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        assertThat(tracker.selectedItems()).isEmpty()
+        tracker.selectAllItems()
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
     }
 
     @Test
     fun `selectAllItems works with mixed selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
-        adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-        adapter.selectAllItems()
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        tracker.selectItem(testItem)
+        assertThat(tracker.selectedItems()).containsExactly(testItem)
+        tracker.selectAllItems()
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
     }
 
     @Test
     fun `selectAllItems works with all selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
-        adapter.selectItem(selectablePrimitive)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
-        adapter.selectAllItems()
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        tracker.selectItem(testItem)
+        tracker.selectItem(intItem)
+        tracker.selectItem(stringItem)
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        tracker.selectAllItems()
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
     }
 
     @Test
     fun `deselectAllItems works with no selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        assertThat(tracker.selectedItems()).isEmpty()
 
-        adapter.deselectAllItems()
-        assertThat(adapter.selectedItems()).isEmpty()
+        tracker.deselectAllItems()
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `deselectAllItems works with mixed selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2))
-        adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
-        adapter.deselectAllItems()
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        tracker.selectItem(testItem)
+        assertThat(tracker.selectedItems()).containsExactly(testItem)
+        tracker.deselectAllItems()
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `deselectAllItems works with all selected items`() {
-        adapter.items.addAll(listOf(regularItem, selectableItem1, selectableItem2, regularPrimitive, selectablePrimitive))
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
-        adapter.selectItem(selectablePrimitive)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2, selectablePrimitive)
-        adapter.deselectAllItems()
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        tracker.selectItem(testItem)
+        tracker.selectItem(intItem)
+        tracker.selectItem(stringItem)
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        tracker.deselectAllItems()
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 
     @Test
     fun `toggling selection repeatedly does not affect adapter`() {
-        adapter.items.addAll(listOf(selectableItem1, selectableItem2))
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem1)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
-        adapter.deselectItem(selectableItem1)
-        adapter.deselectItem(selectableItem2)
-        adapter.selectItem(selectableItem1)
-        adapter.selectItem(selectableItem2)
-        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
-        adapter.deselectItem(selectableItem1)
-        adapter.deselectItem(selectableItem2)
-        assertThat(adapter.selectedItems()).isEmpty()
+        adapter.items.addAll(listOf(testItem, intItem))
+        tracker.selectItem(testItem)
+        tracker.selectItem(intItem)
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        tracker.selectItem(testItem)
+        tracker.selectItem(testItem)
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        tracker.deselectItem(testItem)
+        tracker.deselectItem(intItem)
+        tracker.selectItem(testItem)
+        tracker.selectItem(intItem)
+        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        tracker.deselectItem(testItem)
+        tracker.deselectItem(intItem)
+        assertThat(tracker.selectedItems()).isEmpty()
     }
 }
