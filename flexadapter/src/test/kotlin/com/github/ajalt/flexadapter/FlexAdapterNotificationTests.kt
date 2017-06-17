@@ -40,6 +40,18 @@ class FlexAdapterNotificationTests {
     }
 
     @Test
+    fun `settings items causes notifications`() {
+        adapter.items.add(1)
+        verify(observer).onItemRangeInserted(0, 1)
+        adapter.items[0] = -1
+        verify(observer).onItemRangeChanged(eq(0), eq(1), anyOrNull())
+        adapter.items.add(1)
+        verify(observer).onItemRangeInserted(1, 1)
+        adapter.items[1] = -2
+        verify(observer).onItemRangeChanged(eq(1), eq(1), anyOrNull())
+    }
+
+    @Test
     fun `changing ranges causes notifications`() {
         adapter.items.addAll(listOf(1, 2, 3))
         verify(observer).onItemRangeInserted(0, 3)
@@ -54,7 +66,23 @@ class FlexAdapterNotificationTests {
     }
 
     @Test
-    fun `disabling automatic notifications`() {
+    fun `modifying iterator causes notification`() {
+        adapter.items.addAll(listOf(1, 2, 3))
+        verify(observer).onItemRangeInserted(0, 3)
+
+        val iter = adapter.items.listIterator()
+        iter.next()
+        iter.set(5)
+        verify(observer).onItemRangeChanged(eq(0), eq(1), anyOrNull())
+        iter.next()
+        iter.set(6)
+        verify(observer).onItemRangeChanged(eq(1), eq(1), anyOrNull())
+        iter.remove()
+        verify(observer).onItemRangeRemoved(1, 1)
+    }
+
+    @Test
+    fun `automatic notifications can be disabled`() {
         adapter.items.add(1)
         verify(observer).onItemRangeInserted(0, 1)
         adapter.automaticallyNotifyOnItemChanges = false
