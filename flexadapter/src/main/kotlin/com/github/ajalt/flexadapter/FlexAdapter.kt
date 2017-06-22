@@ -12,7 +12,6 @@ import android.view.ViewGroup
 import com.github.ajalt.flexadapter.internal.ObservableArrayList
 import com.github.ajalt.flexadapter.internal.ObservableList
 import java.util.*
-import kotlin.reflect.KClass
 
 /** @see FlexAdapterItemBase */
 internal interface FlexAdapterItemAttrs {
@@ -103,7 +102,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      * is only called once per subclass that wasn't directly registered, so it doesn't impact
      * performance.
      */
-    private val itemAttrsByBaseClass = HashMap<KClass<*>, Pair<(KClass<*>, Any) -> Boolean, ItemAttrs>>()
+    private val itemAttrsByBaseClass = IdentityHashMap<Class<*>, Pair<(Class<*>, Any) -> Boolean, ItemAttrs>>()
     /** A map of concrete class view type to custom view type. */
     private val customViewTypes = HashMap<Int, Int>()
     private var callDragListenerOnDropOnly: Boolean = true
@@ -447,29 +446,29 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     @PublishedApi
-    open internal fun registerType(cls: KClass<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
+    open internal fun registerType(cls: Class<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                                    dragDirs: Int, viewType: Int?, viewBinder: (Any, View, Int) -> Unit) {
-        require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls.java)) {
+        require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls)) {
             "Cannot register types inheriting from FlexAdapterItemBase."
         }
         putItemAttrs(cls, viewType, PlainItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
     @PublishedApi
-    open internal fun registerSelectableType(cls: KClass<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
+    open internal fun registerSelectableType(cls: Class<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                                              dragDirs: Int, viewType: Int?, viewBinder: (Any, View, Boolean, Int) -> Unit) {
-        require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls.java)) {
+        require(!FlexAdapterItemBase::class.java.isAssignableFrom(cls)) {
             "Cannot register types inheriting from FlexAdapterItemBase."
         }
         putItemAttrs(cls, viewType, SelectableItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
     }
 
     @Synchronized
-    private fun putItemAttrs(cls: KClass<*>, itemType: Int?, itemAttrs: ItemAttrs) {
-        val predicate = { cls: KClass<*>, it: Any -> cls.java.isAssignableFrom(it.javaClass) }
+    private fun putItemAttrs(cls: Class<*>, itemType: Int?, itemAttrs: ItemAttrs) {
+        val predicate = { cls: Class<*>, it: Any -> cls.isAssignableFrom(it.javaClass) }
         val reregistered = itemAttrsByBaseClass.put(cls, predicate to itemAttrs) != null
         if (reregistered) invalidateItemTypeCache()
-        val hashCode = cls.java.hashCode()
+        val hashCode = System.identityHashCode(cls)
         itemAttrsByItemType.put(itemType ?: hashCode, itemAttrs)
         if (itemType != null) {
             customViewTypes.put(hashCode, itemType)
@@ -497,7 +496,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     @Synchronized
     private fun itemAttrsKey(item: T): Int {
-        val hashCode = item.javaClass.hashCode()
+        val hashCode = System.identityHashCode(item.javaClass)
         // Check isEmpty first to avoid extra map reads in the common case of no custom itemTypes
         if (customViewTypes.isEmpty()) return hashCode
         return customViewTypes[hashCode] ?: hashCode
@@ -507,8 +506,8 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     private fun baseClassAttrsOf(item: T): FlexAdapterItemAttrs? {
         val (cls, pair) = itemAttrsByBaseClass.filter { it.value.first(it.key, item) }.entries.firstOrNull() ?: return null
         // Cache this subclass to avoid future lookups.
-        val hashCode = item.javaClass.hashCode()
-        val customType = customViewTypes[cls.java.hashCode()]
+        val hashCode = System.identityHashCode(item.javaClass)
+        val customType = customViewTypes[System.identityHashCode(cls)]
         if (customType == null) {
             itemAttrsByItemType.put(hashCode, pair.second)
         } else {
@@ -522,7 +521,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private fun unregisteredTypeError() = IllegalArgumentException(
             "Must register type before adding it to adapter. " +
-                    "Registered types are: ${itemAttrsByBaseClass.keys.map { it.java.name }}")
+                    "Registered types are: ${itemAttrsByBaseClass.keys.map { it.name }}")
 }
 
 /**
@@ -573,12 +572,12 @@ typealias FlexAdapterSelectableViewBinder<T> = (T, View, Boolean, Int) -> Unit
  */
 inline fun <reified T> FlexAdapter<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                dragDirs: Int = 0, viewType: Int? = null, crossinline viewBinder: FlexAdapterViewBinder<T>) {
-    registerType(T::class, layout, span, swipeDirs, dragDirs, viewType) { any, v, i -> viewBinder(any as T, v, i) }
+    registerType(T::class.java, layout, span, swipeDirs, dragDirs, viewType) { any, v, i -> viewBinder(any as T, v, i) }
 }
 
 inline fun <reified T> FlexAdapter<*>.register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                dragDirs: Int = 0, viewType: Int? = null) {
-    registerType(T::class, layout, span, swipeDirs, dragDirs, viewType, viewBinderStub)
+    registerType(T::class.java, layout, span, swipeDirs, dragDirs, viewType, viewBinderStub)
 }
 
 /**
@@ -603,10 +602,10 @@ inline fun <reified T> FlexAdapter<*>.register(@LayoutRes layout: Int, span: Int
  */
 inline fun <reified T> FlexAdapter<*>.registerSelectable(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                          dragDirs: Int = 0, viewType: Int? = null, crossinline viewBinder: FlexAdapterSelectableViewBinder<T>) {
-    registerSelectableType(T::class, layout, span, swipeDirs, dragDirs, viewType) { any, v, s, i -> viewBinder(any as T, v, s, i) }
+    registerSelectableType(T::class.java, layout, span, swipeDirs, dragDirs, viewType) { any, v, s, i -> viewBinder(any as T, v, s, i) }
 }
 
 inline fun <reified T> FlexAdapter<*>.registerSelectable(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
                                                          dragDirs: Int = 0, viewType: Int? = null) {
-    registerSelectableType(T::class, layout, span, swipeDirs, dragDirs, viewType, selectableViewBinderStub)
+    registerSelectableType(T::class.java, layout, span, swipeDirs, dragDirs, viewType, selectableViewBinderStub)
 }
