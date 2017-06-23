@@ -7,7 +7,7 @@ import android.support.v7.widget.GridLayoutManager
 import android.view.View
 import com.github.ajalt.flexadapter.FlexAdapter
 import com.github.ajalt.flexadapter.FlexAdapterExtensionItem
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_sample.*
 import kotlinx.android.synthetic.main.item_color_square.view.*
 import java.util.*
 
@@ -25,7 +25,7 @@ class StableIdsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_sample)
         adapter.setHasStableIds(true)
 
         recycler_view.adapter = adapter

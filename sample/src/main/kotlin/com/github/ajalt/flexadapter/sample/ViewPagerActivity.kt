@@ -56,8 +56,8 @@ class ViewPagerActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.order) {
-            0 -> startActivity(Intent(this, MainActivity::class.java))
-            1 -> startActivity(Intent(this, JavaMainActivity::class.java))
+            0 -> startActivity(Intent(this, SampleActivity::class.java))
+            1 -> startActivity(Intent(this, JavaSampleActivity::class.java))
         }
 
         finish()

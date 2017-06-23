@@ -1,6 +1,5 @@
 package com.github.ajalt.flexadapter.sample;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.LayoutRes;
@@ -12,8 +11,6 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -29,7 +26,7 @@ import butterknife.ButterKnife;
 import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
 
-public class JavaMainActivity extends AppCompatActivity {
+public class JavaSampleActivity extends AppCompatActivity {
     public static final int HORIZONTAL = ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
     public static final int VERTICAL = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
     public static final int ALL_DIRS = HORIZONTAL | VERTICAL;
@@ -186,7 +183,7 @@ public class JavaMainActivity extends AppCompatActivity {
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_sample);
         ButterKnife.bind(this);
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, COLUMNS);
@@ -248,20 +245,5 @@ public class JavaMainActivity extends AppCompatActivity {
                         }).show();
             }
         });
-    }
-
-    @Override public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(0, 0, 0, "Switch to Kotlin sample");
-        menu.add(1, 1, 1, "Switch to view pager sample");
-        return true;
-    }
-
-    @Override public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == 0) {
-            startActivity(new Intent(this, MainActivity.class));
-        } else if (item.getItemId() == 1) {
-            startActivity(new Intent(this, ViewPagerActivity.class));
-        }
-        return true;
     }
 }
