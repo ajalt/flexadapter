@@ -174,7 +174,7 @@ public class JavaMainActivity extends AppCompatActivity {
     @BindView(R.id.root_layout)
     View rootView;
 
-    @BindView(R.id.recyclerView)
+    @BindView(R.id.recycler_view)
     RecyclerView recyclerView;
 
     @BindView(R.id.fab)

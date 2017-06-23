@@ -23,10 +23,12 @@ internal interface FlexAdapterItemAttrs {
     val span: Int
     val swipeDirs: Int
     val dragDirs: Int
+    val stableId: Long
 }
 
 private data class ItemAttrs(@LayoutRes val layout: Int, override val span: Int,
                              override val swipeDirs: Int, override val dragDirs: Int,
+                             override val stableId: Long,
                              val viewBinder: (Any, View, Int) -> Unit) : FlexAdapterItemAttrs
 
 /**
@@ -344,13 +346,16 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         }
     }
 
+    /** @suppress */
+    override fun getItemId(position: Int) = attrsAt(position).stableId
+
     @PublishedApi
     open internal fun registerType(cls: Class<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                                    dragDirs: Int, viewType: Int?, viewBinder: (Any, View, Int) -> Unit) {
         require(!FlexAdapterItem::class.java.isAssignableFrom(cls)) {
             "Cannot register types inheriting from FlexAdapterItem."
         }
-        putItemAttrs(cls, viewType, ItemAttrs(layout, span, swipeDirs, dragDirs, viewBinder))
+        putItemAttrs(cls, viewType, ItemAttrs(layout, span, swipeDirs, dragDirs, RecyclerView.NO_ID, viewBinder))
     }
 
     @Synchronized

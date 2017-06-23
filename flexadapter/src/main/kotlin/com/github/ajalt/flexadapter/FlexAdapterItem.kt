@@ -3,6 +3,8 @@ package com.github.ajalt.flexadapter
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import android.view.ViewGroup
+import java.util.concurrent.atomic.AtomicLong
+import kotlin.LazyThreadSafetyMode.NONE
 
 /** An item that holds data for binding in a [FlexAdapter]. */
 abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAttrs {
@@ -51,6 +53,14 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAt
     override val dragDirs: Int get() = 0
 
     /**
+     * If this item has a stable ID (e.g. from a database), you can override this.
+     *
+     * The default implementation uses a global atomic long that is decremented each time an instance of this
+     * class is created.
+     */
+    override val stableId: Long by lazy(NONE) { globalIds.decrementAndGet() }
+
+    /**
      * Bind the contents of this item to a view holder.
      *
      * The bound values should be fields on the item instance doing the binding.
@@ -66,5 +76,9 @@ abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAt
     @Suppress("UNCHECKED_CAST")
     internal fun bindErasedViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         bindViewHolder(holder as VH, position)
+    }
+
+    companion object {
+        private val globalIds = AtomicLong()
     }
 }

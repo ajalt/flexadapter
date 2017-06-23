@@ -18,16 +18,16 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.item_picture.view.*
 import kotlinx.android.synthetic.main.item_text.view.*
 
-const val COLUMNS = 3
-const val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
-const val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
-const val ALL_DIRS = HORIZONTAL or VERTICAL
+private const val COLUMNS = 3
+private const val HORIZONTAL = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+private const val VERTICAL = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+private const val ALL_DIRS = HORIZONTAL or VERTICAL
 
 // You can have your data models inherit from FlexAdapterItem if you want to configure drag, swipe,
 // or span per-item, or if you need more control over the ViewHolder creation.
 
 /** A regular text item */
-class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
+private class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
         FlexAdapterExtensionItem(R.layout.item_text, dragDirs = dragDirs, span = COLUMNS) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.text_view.setText(text)
@@ -36,7 +36,7 @@ class TextItem(@StringRes var text: Int, dragDirs: Int = 0) :
 
 
 /** An image that spans all three columns */
-class WidePictureItem(@DrawableRes val image: Int, dragDirs: Int = 0, swipeDirs: Int = 0, span: Int = COLUMNS) :
+private class WidePictureItem(@DrawableRes val image: Int, dragDirs: Int = 0, swipeDirs: Int = 0, span: Int = COLUMNS) :
         FlexAdapterExtensionItem(R.layout.item_picture, dragDirs = dragDirs, swipeDirs = swipeDirs, span = span) {
     override fun bindItemView(itemView: View, position: Int) {
         itemView.image_view.setImageResource(image)
@@ -59,8 +59,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = GridLayoutManager(this, COLUMNS).apply {
+        recycler_view.adapter = adapter
+        recycler_view.layoutManager = GridLayoutManager(this, COLUMNS).apply {
             spanSizeLookup = adapter.spanSizeLookup
         }
 
