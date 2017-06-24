@@ -1,6 +1,5 @@
 package com.github.ajalt.flexadapter
 
-import android.R
 import android.view.View
 import android.widget.FrameLayout
 import com.nhaarman.mockito_kotlin.mock
@@ -26,7 +25,7 @@ class O2 : O()
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class FlexAdapterTest {
-    private val layout = R.layout.test_list_item
+    private val layout = android.R.layout.test_list_item
 
     @Rule @JvmField
     val exception: ExpectedException = ExpectedException.none()

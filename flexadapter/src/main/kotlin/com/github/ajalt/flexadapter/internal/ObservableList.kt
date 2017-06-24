@@ -2,6 +2,7 @@ package com.github.ajalt.flexadapter.internal
 
 import android.os.Build
 import android.support.annotation.RequiresApi
+import android.support.annotation.VisibleForTesting
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -14,15 +15,26 @@ internal interface ObservableList<T> : MutableList<T> {
         fun onItemChanged(sender: ObservableList<T>, index: Int, oldItem: T)
         fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int)
         fun onItemRangeRemoved(sender: ObservableList<T>, start: Int, count: Int)
-        fun onItemRemoved(sender: ObservableList<T>, index: Int, item:T)
+        fun onItemRemoved(sender: ObservableList<T>, index: Int, item: T)
     }
+
+    fun registerListener(listener: ObservableList.OnListChangedCallback<T>)
+    fun unregisterListener(listener: ObservableList.OnListChangedCallback<T>)
+    fun unregisterAllListeners()
 }
 
-internal class ObservableArrayList<T>(var listener: ObservableList.OnListChangedCallback<T>?)
-    : ArrayList<T>(), ObservableList<T> {
+internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
+    @VisibleForTesting val listeners = WeakHashMap<ObservableList.OnListChangedCallback<T>, Void>()
+
+    override fun registerListener(listener: ObservableList.OnListChangedCallback<T>) {
+        listeners.putIfAbsent(listener, null)
+    }
+    override fun unregisterListener(listener: ObservableList.OnListChangedCallback<T>) {
+        listeners.remove(listener)
+    }
+    override fun unregisterAllListeners() = listeners.clear()
 
     override fun add(element: T): Boolean = super.add(element).apply { notifyAdd(size - 1, 1) }
-
     override fun add(index: Int, element: T) = super.add(index, element).apply { notifyAdd(index, 1) }
 
     override fun addAll(elements: Collection<T>): Boolean {
@@ -87,10 +99,10 @@ internal class ObservableArrayList<T>(var listener: ObservableList.OnListChanged
     override fun removeIf(filter: Predicate<in T>): Boolean
             = super<ArrayList>.removeIf(filter).apply { notifyAllChange() }
 
-    private fun notifyAdd(start: Int, count: Int) = listener?.onItemRangeInserted(this, start, count)
-    private fun notifyRangeRemove(start: Int, count: Int) = listener?.onItemRangeRemoved(this, start, count)
-    private fun notifyRemove(index: Int, item: T) = listener?.onItemRemoved(this, index, item)
-    private fun notifyChange(index: Int, oldItem: T) = listener?.onItemChanged(this, index, oldItem)
-    private fun notifyAllChange() = listener?.onChanged(this)
+    private fun notifyAdd(start: Int, count: Int) = listeners.forEach { it.key.onItemRangeInserted(this, start, count) }
+    private fun notifyRangeRemove(start: Int, count: Int) = listeners.forEach { it.key.onItemRangeRemoved(this, start, count) }
+    private fun notifyRemove(index: Int, item: T) = listeners.forEach { it.key.onItemRemoved(this, index, item) }
+    private fun notifyChange(index: Int, oldItem: T) = listeners.forEach { it.key.onItemChanged(this, index, oldItem) }
+    private fun notifyAllChange() = listeners.forEach { it.key.onChanged(this) }
 }
 

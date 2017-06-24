@@ -1,5 +1,7 @@
 package com.github.ajalt.flexadapter
 
+import android.os.Build
+import android.support.annotation.RequiresApi
 import android.support.v7.widget.RecyclerView
 import com.nhaarman.mockito_kotlin.*
 import org.junit.Before
@@ -52,6 +54,7 @@ class FlexAdapterNotificationTests {
     }
 
     @Test
+    @RequiresApi(Build.VERSION_CODES.N)
     fun `changing ranges causes notifications`() {
         adapter.items.addAll(listOf(1, 2, 3))
         verify(observer).onItemRangeInserted(0, 3)

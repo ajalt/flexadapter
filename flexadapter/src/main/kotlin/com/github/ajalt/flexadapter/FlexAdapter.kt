@@ -111,7 +111,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      *
      * Changes to this list will automatically be reflected in the adapter.
      */
-    val items: MutableList<T> = ObservableArrayList(listListener)
+    val items: MutableList<T> = ObservableArrayList<T>().apply { registerListener(listListener) }
         @JvmName("items")
         get
 
@@ -360,7 +360,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     @Synchronized
     private fun putItemAttrs(cls: Class<*>, itemType: Int?, itemAttrs: ItemAttrs) {
-        val predicate = { clz: Class<*>, it: Any -> clz.isAssignableFrom(it.javaClass) }
+        val predicate = { c: Class<*>, it: Any -> c.isAssignableFrom(it.javaClass) }
         val reregistered = itemAttrsByBaseClass.put(cls, predicate to itemAttrs) != null
         if (reregistered) invalidateItemTypeCache()
         val hashCode = System.identityHashCode(cls)

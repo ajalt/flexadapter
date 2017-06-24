@@ -2,7 +2,6 @@ package com.github.ajalt.flexadapter
 
 import java.util.*
 
-
 /**
  * A class that tracks the selection state of items in an adapter.
  *
@@ -14,7 +13,7 @@ import java.util.*
  *
  * All items must implement a valid [hashCode] for this class to work correctly.
  */
-class SelectionTracker<T : Any>(private val adapter: FlexAdapter<T>): ItemRemovedListener<T> {
+class SelectionTracker<T : Any>(private val adapter: FlexAdapter<T>) : ItemRemovedListener<T> {
     private var selectedItems: MutableSet<T> = HashSet()
 
     init {
@@ -99,7 +98,7 @@ class SelectionTracker<T : Any>(private val adapter: FlexAdapter<T>): ItemRemove
 
     override fun allItemChanged() {
         if (selectedItems.isEmpty()) return
-        val newSelection = HashSet<T>(minOf(selectedItems.size, adapter.items.size))
+        val newSelection = HashSet<T>(Math.min(selectedItems.size, adapter.items.size))
         adapter.items.filterTo(newSelection) { it in selectedItems }
         selectedItems = newSelection
     }
