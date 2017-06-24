@@ -3,11 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
     dependencies {
         classpath deps.androidApt
         classpath deps.gradleRetrolambda
+        classpath deps.buildscript.versions
     }
 }
 
