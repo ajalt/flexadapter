@@ -13,11 +13,6 @@ import com.github.ajalt.flexadapter.internal.ObservableArrayList
 import com.github.ajalt.flexadapter.internal.ObservableList
 import java.util.*
 
-internal interface ItemRemovedListener<in T> {
-    fun itemRemoved(item: T)
-    fun allItemChanged()
-}
-
 /** @see FlexAdapterItem */
 internal interface FlexAdapterItemAttrs {
     val span: Int
@@ -56,23 +51,23 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         } else Unit
 
         override fun onItemChanged(sender: ObservableList<T>, index: Int, oldItem: T) = if (enabled) {
-            markItemRemoved(oldItem)
+            // markItemRemoved(oldItem)
             recordItems(index..index)
             notifyItemChanged(index)
         } else Unit
 
-        override fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int) = if (enabled) {
+        override fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int) = if (enabled && count > 0) {
             recordItems(start until start + count)
             notifyItemRangeInserted(start, count)
         } else Unit
 
-        override fun onItemRangeRemoved(sender: ObservableList<T>, start: Int, count: Int) = if (enabled) {
+        override fun onItemRangeRemoved(sender: ObservableList<T>, start: Int, count: Int) = if (enabled && count > 0) {
             recordAllItems()
             notifyItemRangeRemoved(start, count)
         } else Unit
 
         override fun onItemRemoved(sender: ObservableList<T>, index: Int, item: T) = if (enabled) {
-            markItemRemoved(item)
+            // markItemRemoved(item)
             notifyItemRemoved(index)
         } else Unit
     }
@@ -104,7 +99,6 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     /** A map of concrete class view type to custom view type. */
     private val customViewTypes = HashMap<Int, Int>()
     private var callDragListenerOnDropOnly: Boolean = true
-    internal var itemRemovedListener: ItemRemovedListener<T>? = null
 
     /**
      * The items in this adapter.
@@ -301,14 +295,16 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         }
     }
 
-    private fun markItemRemoved(item: T) {
-        itemRemovedListener?.itemRemoved(item)
-    }
-
     private fun recordAllItems() {
         viewHolderFactoriesByItemType.clear()
         recordItems(items.indices)
-        itemRemovedListener?.allItemChanged()
+    }
+
+    internal fun registerListener(listener: ObservableList.OnListChangedCallback<T>) {
+        (items as ObservableList<T>).registerListener(listener)
+    }
+    internal fun unregisterListener(listener: ObservableList.OnListChangedCallback<T>) {
+        (items as ObservableList<T>).unregisterListener(listener)
     }
 
     /** @suppress */

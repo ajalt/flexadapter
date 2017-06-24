@@ -1,5 +1,6 @@
 package com.github.ajalt.flexadapter
 
+import com.github.ajalt.flexadapter.internal.ObservableList
 import java.util.*
 
 /**
@@ -13,11 +14,38 @@ import java.util.*
  *
  * All items must implement a valid [hashCode] for this class to work correctly.
  */
-class SelectionTracker<T : Any>(private val adapter: FlexAdapter<T>) : ItemRemovedListener<T> {
+class SelectionTracker<T : Any> private constructor(private val adapter: FlexAdapter<T>) {
+    companion object {
+        fun <T : Any> create(adapter: FlexAdapter<T>) = SelectionTracker(adapter).apply {
+            adapter.registerListener(listener)
+        }
+    }
+
     private var selectedItems: MutableSet<T> = HashSet()
 
-    init {
-        adapter.itemRemovedListener = this
+    private val listener = object : ObservableList.OnListChangedCallback<T> {
+        override fun onChanged(sender: ObservableList<T>) {
+            if (selectedItems.isEmpty()) return
+            val newSelection = HashSet<T>(minOf(selectedItems.size, adapter.items.size))
+            adapter.items.filterTo(newSelection) { it in selectedItems }
+            selectedItems = newSelection
+        }
+
+        override fun onItemChanged(sender: ObservableList<T>, index: Int, oldItem: T) {
+            selectedItems.remove(oldItem)
+        }
+
+        override fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int) {
+            // Nothing to do
+        }
+
+        override fun onItemRangeRemoved(sender: ObservableList<T>, start: Int, count: Int) {
+            onChanged(sender)
+        }
+
+        override fun onItemRemoved(sender: ObservableList<T>, index: Int, item: T) {
+            selectedItems.remove(item)
+        }
     }
 
     /** Return a set containing any items that are currently selected. */
@@ -91,18 +119,7 @@ class SelectionTracker<T : Any>(private val adapter: FlexAdapter<T>) : ItemRemov
             }
         }
     }
-
-    override fun itemRemoved(item: T) {
-        selectedItems.remove(item)
-    }
-
-    override fun allItemChanged() {
-        if (selectedItems.isEmpty()) return
-        val newSelection = HashSet<T>(Math.min(selectedItems.size, adapter.items.size))
-        adapter.items.filterTo(newSelection) { it in selectedItems }
-        selectedItems = newSelection
-    }
 }
 
 /** Create a [SelectionTracker] for this adapter. */
-fun <T : Any> FlexAdapter<T>.selectionTracker() = SelectionTracker(this)
+fun <T : Any> FlexAdapter<T>.selectionTracker() = SelectionTracker.create(this)

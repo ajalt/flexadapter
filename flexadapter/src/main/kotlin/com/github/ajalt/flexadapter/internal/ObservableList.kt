@@ -29,9 +29,11 @@ internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
     override fun registerListener(listener: ObservableList.OnListChangedCallback<T>) {
         listeners.putIfAbsent(listener, null)
     }
+
     override fun unregisterListener(listener: ObservableList.OnListChangedCallback<T>) {
         listeners.remove(listener)
     }
+
     override fun unregisterAllListeners() = listeners.clear()
 
     override fun add(element: T): Boolean = super.add(element).apply { notifyAdd(size - 1, 1) }
@@ -76,8 +78,16 @@ internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
     override fun retainAll(elements: Collection<T>): Boolean
             = super.retainAll(elements).apply { notifyAllChange() }
 
-    override fun removeRange(fromIndex: Int, toIndex: Int)
-            = super.removeRange(fromIndex, toIndex).apply { notifyRangeRemove(fromIndex, toIndex - fromIndex) }
+    override fun removeRange(fromIndex: Int, toIndex: Int) {
+        if (toIndex == fromIndex) return
+        // In the case of single element removal, we can notify with the removed item
+        if (toIndex == fromIndex + 1) {
+            removeAt(fromIndex)
+        } else {
+            super.removeRange(fromIndex, toIndex)
+            notifyRangeRemove(fromIndex, toIndex - fromIndex)
+        }
+    }
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun forEach(action: Consumer<in T>?) = super<ArrayList>.forEach(action)
