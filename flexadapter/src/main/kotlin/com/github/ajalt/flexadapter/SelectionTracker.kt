@@ -21,22 +21,45 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
         }
     }
 
-    private var selectedItems: MutableSet<T> = HashSet()
+    private var allSelected = false
+    /**
+     * If [allSelected] == `false`, this is the set of selected items. If [allSelected] == false, this is the
+     * set of items that are _not_ selected.
+     *
+     * This is an optimization of the common case of calling [selectAllItems] to allow it to be done in
+     * constant time instead of needing to add the entire list of items to the selected set.
+     */
+    private var disjointItems: MutableSet<T> = HashSet()
 
     private val listener = object : ObservableList.OnListChangedCallback<T> {
         override fun onChanged(sender: ObservableList<T>) {
-            if (selectedItems.isEmpty()) return
-            val newSelection = HashSet<T>(minOf(selectedItems.size, adapter.items.size))
-            adapter.items.filterTo(newSelection) { it in selectedItems }
-            selectedItems = newSelection
+            // The behavior of this function is to retain the selection state of all items that are still in
+            // the adapter, while removing the state of any that have been removed from the adapter. This
+            // current algorithm is currently sufficient for correctness, since this function only called when
+            // items are removed or their position is changed. If the ObservableList ever calls this as the
+            // result of items being added, this will incorrectly mark them as selected if allSelected is
+            // true.
+            if (sender.isEmpty()) {
+                allSelected = false
+                disjointItems.clear()
+                return
+            }
+            if (disjointItems.isEmpty()) return
+            val newSelection = HashSet<T>(minOf(disjointItems.size, adapter.items.size))
+            adapter.items.filterTo(newSelection) { it in disjointItems }
+            disjointItems = newSelection
         }
 
         override fun onItemChanged(sender: ObservableList<T>, index: Int, oldItem: T) {
-            selectedItems.remove(oldItem)
+            trackDeselection(oldItem)
         }
 
         override fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int) {
-            // Nothing to do
+            if (allSelected) {
+                for (i in start..start + count - 1) {
+                    trackDeselection(sender[i])
+                }
+            }
         }
 
         override fun onItemRangeRemoved(sender: ObservableList<T>, start: Int, count: Int) {
@@ -44,18 +67,29 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
         }
 
         override fun onItemRemoved(sender: ObservableList<T>, index: Int, item: T) {
-            selectedItems.remove(item)
+            disjointItems.remove(item)
         }
     }
 
-    /** Return a set containing any items that are currently selected. */
-    fun selectedItems(): Set<T> = selectedItems.toSet()
+    /**
+     * Return a collection containing any items that are currently selected.
+     *
+     * Note that this creates a new collection. If you just want to check an item for membership, [isSelected]
+     * is faster.
+     */
+    fun selectedItems(): Collection<T> =
+            if (allSelected) adapter.items.filter { it !in disjointItems }
+            else HashSet(disjointItems)
 
     /** The number of items currently selected. */
-    val selectedItemCount: Int get() = selectedItems.size
+    val selectedItemCount: Int
+        get() {
+            return if (allSelected) adapter.items.size - disjointItems.size
+            else disjointItems.size
+        }
 
     /** Return true if the given item is marked as selected */
-    fun isSelected(item: T) = selectedItems.contains(item)
+    fun isSelected(item: T) = allSelected != disjointItems.contains(item)
 
     /**
      * Mark an item as selected.
@@ -68,7 +102,8 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
     fun selectItem(item: T) {
         val i = adapter.items.indexOf(item)
         require(i >= 0) { "Cannot select item that is not in adapter." }
-        selectedItems.add(item)
+        if (allSelected) disjointItems.remove(item)
+        else disjointItems.add(item)
         adapter.notifyItemChanged(i)
     }
 
@@ -84,8 +119,13 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
     fun deselectItem(item: T) {
         val i = adapter.items.indexOf(item)
         if (i < 0) return
-        selectedItems.remove(item)
+        trackDeselection(item)
         adapter.notifyItemChanged(i)
+    }
+
+    private fun trackDeselection(item: T) {
+        if (allSelected) disjointItems.add(item)
+        else disjointItems.remove(item)
     }
 
     /**
@@ -96,12 +136,8 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
      * If there are no items in the adapter, this call has no effect.
      */
     fun deselectAllItems() {
-        if (selectedItems.isEmpty()) return
-
-        for ((i, item) in adapter.items.withIndex()) {
-            if (selectedItems.remove(item)) adapter.notifyItemChanged(i)
-            if (selectedItems.isEmpty()) return
-        }
+        if (allSelected) removeDisjointItemsWithToggle()
+        else removeDisjointItemsWithoutToggle()
     }
 
     /**
@@ -112,10 +148,34 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
      * If there are no items in the adapter, this call has no effect.
      */
     fun selectAllItems() {
-        if (selectedItemCount >= adapter.itemCount) return
+        if (allSelected) removeDisjointItemsWithoutToggle()
+        else removeDisjointItemsWithToggle()
+    }
+
+    private fun removeDisjointItemsWithoutToggle() {
+        if (disjointItems.isEmpty()) return
         for ((i, item) in adapter.items.withIndex()) {
-            if (selectedItems.add(item)) {
-                adapter.notifyItemChanged(i)
+            if (disjointItems.remove(item)) adapter.notifyItemChanged(i)
+            if (disjointItems.isEmpty()) return
+        }
+    }
+
+    private fun removeDisjointItemsWithToggle() {
+        allSelected = !allSelected
+        if (disjointItems.isEmpty()) {
+            adapter.notifyItemRangeChanged(0, adapter.items.size)
+            return
+        }
+        if (disjointItems.size >= adapter.items.size) {
+            disjointItems.clear()
+            adapter.notifyItemRangeChanged(0, adapter.items.size)
+            return
+        }
+        for ((i, item) in adapter.items.withIndex()) {
+            if (!disjointItems.remove(item)) adapter.notifyItemChanged(i)
+            if (disjointItems.isEmpty()) {
+                adapter.notifyItemRangeChanged(i, adapter.items.size - i)
+                return
             }
         }
     }

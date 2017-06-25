@@ -2,6 +2,7 @@ package com.github.ajalt.flexadapter
 
 import android.view.View
 import org.assertj.core.api.Java6Assertions.assertThat
+import org.assertj.core.api.SoftAssertions
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -25,65 +26,74 @@ class FlexAdapterSelectableItemTest {
     val intItem2 = 7
     val testItem = TestItem("regularItem")
 
+    fun assertTrackedValues(vararg items: Any) {
+        with(SoftAssertions()) {
+            assertThat(tracker.selectedItemCount).isEqualTo(items.size)
+            if (items.isEmpty()) {
+                assertThat(tracker.selectedItems()).isEmpty()
+            } else {
+                assertThat(tracker.selectedItems()).containsOnly(*items)
+                for (item in items) {
+                    assertThat(tracker.isSelected(item))
+                }
+            }
+            assertAll()
+        }
+    }
+
     @Test
     fun `selection count is zero when empty`() {
-        assertThat(tracker.selectedItemCount).isEqualTo(0)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
     fun `selection count is zero when only unselected items are present`() {
         adapter.items.addAll(listOf(testItem, intItem, stringItem))
-        assertThat(tracker.selectedItemCount).isEqualTo(0)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
     fun `FlexAdapterItems can be selected`() {
         adapter.items.addAll(listOf(intItem, testItem))
-        assertThat(tracker.selectedItemCount).isEqualTo(0)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
 
         tracker.selectItem(intItem)
-        assertThat(tracker.selectedItems()).containsExactly(intItem)
+        assertTrackedValues(intItem)
     }
 
     @Test
     fun `registered objects can be selected`() {
         adapter.items.addAll(listOf(stringItem, intItem))
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
 
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactly(stringItem)
+        assertTrackedValues(stringItem)
     }
 
     @Test
     fun `deselecting item updates count`() {
         adapter.items.addAll(listOf(intItem2, testItem))
         tracker.selectItem(intItem2)
-        assertThat(tracker.selectedItemCount).isEqualTo(1)
-        assertThat(tracker.selectedItems()).containsExactly(intItem2)
+        assertTrackedValues(intItem2)
 
         tracker.deselectItem(intItem2)
-        assertThat(tracker.selectedItemCount).isEqualTo(0)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
 
         adapter.items.addAll(listOf(stringItem, intItem))
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactly(stringItem)
+        assertTrackedValues(stringItem)
 
         tracker.deselectItem(stringItem)
-        assertThat(tracker.selectedItemCount).isEqualTo(0)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
     fun `removing selected item updates count`() {
         adapter.items.add(intItem)
         tracker.selectItem(intItem)
-        assertThat(tracker.selectedItems()).containsExactly(intItem)
+        assertTrackedValues(intItem)
         tracker.deselectItem(intItem)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -94,24 +104,24 @@ class FlexAdapterSelectableItemTest {
         adapter.items.removeAt(0)
         tracker.deselectItem(intItem)
 
-        assertThat(tracker.selectedItems()).containsExactly(intItem2)
+        assertTrackedValues(intItem2)
     }
 
     @Test
     fun `selectAllItems works with no selected items`() {
         adapter.items.addAll(listOf(testItem, intItem, stringItem))
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
         tracker.selectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
     }
 
     @Test
     fun `selectAllItems works with mixed selected items`() {
         adapter.items.addAll(listOf(testItem, intItem, stringItem))
         tracker.selectItem(testItem)
-        assertThat(tracker.selectedItems()).containsExactly(testItem)
+        assertTrackedValues(testItem)
         tracker.selectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
     }
 
     @Test
@@ -120,9 +130,9 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
         tracker.selectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
     }
 
     @Test
@@ -132,9 +142,9 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
         tracker.selectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
     }
 
     @Test
@@ -143,27 +153,27 @@ class FlexAdapterSelectableItemTest {
         tracker.selectAllItems()
         tracker.deselectItem(testItem)
         tracker.deselectItem(intItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(stringItem)
+        assertTrackedValues(stringItem)
         tracker.deselectItem(intItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(stringItem)
+        assertTrackedValues(stringItem)
     }
 
     @Test
     fun `deselectAllItems works with no selected items`() {
         adapter.items.addAll(listOf(testItem, intItem, stringItem))
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
 
         tracker.deselectAllItems()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
     fun `deselectAllItems works with mixed selected items`() {
         adapter.items.addAll(listOf(testItem, intItem, stringItem))
         tracker.selectItem(testItem)
-        assertThat(tracker.selectedItems()).containsExactly(testItem)
+        assertTrackedValues(testItem)
         tracker.deselectAllItems()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -172,9 +182,9 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem, stringItem)
+        assertTrackedValues(testItem, intItem, stringItem)
         tracker.deselectAllItems()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -186,9 +196,9 @@ class FlexAdapterSelectableItemTest {
         tracker.deselectAllItems()
         tracker.selectItem(intItem)
 
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(intItem)
+        assertTrackedValues(intItem)
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(intItem, stringItem)
+        assertTrackedValues(intItem, stringItem)
     }
 
     @Test
@@ -202,9 +212,9 @@ class FlexAdapterSelectableItemTest {
         tracker.deselectItem(intItem)
         tracker.deselectItem(stringItem)
         tracker.selectItem(stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(stringItem)
+        assertTrackedValues(stringItem)
         tracker.deselectItem(stringItem)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -212,24 +222,24 @@ class FlexAdapterSelectableItemTest {
         adapter.items.addAll(listOf(testItem, intItem))
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        assertTrackedValues(testItem, intItem)
         tracker.selectItem(testItem)
         tracker.selectItem(testItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        assertTrackedValues(testItem, intItem)
         tracker.deselectItem(testItem)
         tracker.deselectItem(intItem)
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        assertTrackedValues(testItem, intItem)
         tracker.deselectItem(testItem)
         tracker.deselectItem(intItem)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
         tracker.selectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        assertTrackedValues(testItem, intItem)
         tracker.deselectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder()
+        assertTrackedValues()
         tracker.selectAllItems()
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem, intItem)
+        assertTrackedValues(testItem, intItem)
     }
 
     @Test
@@ -237,7 +247,7 @@ class FlexAdapterSelectableItemTest {
         adapter.items.addAll(listOf(testItem, intItem))
         tracker.selectItem(testItem)
         adapter.items.add(0, stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem)
+        assertTrackedValues(testItem)
     }
 
     @Test
@@ -245,8 +255,9 @@ class FlexAdapterSelectableItemTest {
         adapter.items.addAll(listOf(testItem, intItem))
         tracker.selectAllItems()
         tracker.deselectItem(intItem)
+        assertTrackedValues(testItem)
         adapter.items.add(0, stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(testItem)
+        assertTrackedValues(testItem)
     }
 
     @Test
@@ -257,7 +268,7 @@ class FlexAdapterSelectableItemTest {
         tracker.deselectAllItems()
         tracker.selectItem(intItem)
         adapter.items.add(0, stringItem)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(intItem)
+        assertTrackedValues(intItem)
     }
 
     @Test
@@ -266,7 +277,19 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
         adapter.items.removeAt(0)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(intItem)
+        assertTrackedValues(intItem)
+    }
+
+    @Test
+    fun `removing multiple items after selectItem deselects them`() {
+        adapter.items.addAll(listOf(testItem, intItem, intItem2, stringItem))
+        tracker.selectItem(testItem)
+        tracker.selectItem(stringItem)
+        tracker.selectItem(intItem)
+        tracker.selectItem(intItem2)
+        tracker.deselectItem(intItem)
+        adapter.items.removeAll(listOf(intItem, intItem2))
+        assertTrackedValues(testItem, stringItem)
     }
 
     @Test
@@ -275,7 +298,7 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
         adapter.items.clear()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -284,7 +307,16 @@ class FlexAdapterSelectableItemTest {
         tracker.selectAllItems()
         tracker.deselectItem(intItem)
         adapter.items.removeAt(0)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(stringItem)
+        assertTrackedValues(stringItem)
+    }
+
+    @Test
+    fun `removing multiple items after selectAll deselects them`() {
+        adapter.items.addAll(listOf(testItem, intItem, intItem2, stringItem))
+        tracker.selectAllItems()
+        tracker.deselectItem(intItem)
+        adapter.items.removeAll(listOf(intItem, intItem2))
+        assertTrackedValues(testItem, stringItem)
     }
 
     @Test
@@ -292,7 +324,7 @@ class FlexAdapterSelectableItemTest {
         adapter.items.addAll(listOf(testItem, intItem))
         tracker.selectAllItems()
         adapter.items.clear()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -302,7 +334,7 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(intItem)
         tracker.deselectItem(testItem)
         adapter.items.removeAt(0)
-        assertThat(tracker.selectedItems()).containsExactlyInAnyOrder(intItem)
+        assertTrackedValues(intItem)
     }
 
     @Test
@@ -312,7 +344,7 @@ class FlexAdapterSelectableItemTest {
         tracker.selectItem(intItem)
         tracker.deselectItem(intItem)
         adapter.items.clear()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 
     @Test
@@ -323,15 +355,27 @@ class FlexAdapterSelectableItemTest {
         tracker.deselectAllItems()
         tracker.deselectItem(intItem)
         adapter.items.removeAt(0)
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
-
+    @Test
+    fun `removing multiple items after deselectAll deselects them`() {
+        adapter.items.addAll(listOf(testItem, intItem, intItem2, stringItem))
+        tracker.selectItem(testItem)
+        tracker.selectItem(intItem)
+        tracker.selectItem(intItem2)
+        tracker.deselectAllItems()
+        tracker.selectItem(testItem)
+        tracker.deselectItem(intItem)
+        tracker.selectItem(intItem2)
+        adapter.items.removeAll(listOf(intItem, intItem2))
+        assertTrackedValues(testItem)
+    }
     @Test
     fun `removing all items after deselectAll deselects them`() {
         adapter.items.addAll(listOf(testItem, intItem))
         tracker.selectItem(testItem)
         tracker.selectItem(intItem)
         adapter.items.clear()
-        assertThat(tracker.selectedItems()).isEmpty()
+        assertTrackedValues()
     }
 }
