@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:animateLayoutChanges="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:ignore="ContentDescription">
+
+    <ImageButton
+        android:id="@+id/carousel_add"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="8dp"
+        android:src="@drawable/ic_add_circle_black_24dp"/>
+
+    <ImageButton
+        android:id="@+id/carousel_clear"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/carousel_add"
+        android:minWidth="8dp"
+        android:src="@drawable/ic_delete_black_24dp"/>
+
+    <ImageButton
+        android:id="@+id/carousel_change"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/carousel_add"
+        android:minWidth="8dp"
+        android:src="@drawable/ic_invert_colors_black_24dp"/>
+
+    <ImageButton
+        android:id="@+id/carousel_shuffle"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/carousel_clear"
+        android:layout_toEndOf="@+id/carousel_change"
+        android:minWidth="8dp"
+        android:src="@drawable/ic_shuffle_black_24dp"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/carousel_rv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_alignBottom="@+id/carousel_shuffle"
+        android:layout_toEndOf="@id/carousel_shuffle"/>
+</RelativeLayout>

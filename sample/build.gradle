@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId 'com.github.ajalt.flexadapter.sample'
-        minSdkVersion versions.minSdk
+        minSdkVersion 21
         targetSdkVersion versions.targetSdk
         versionCode Integer.parseInt(project.VERSION_CODE)
         versionName project.VERSION_NAME

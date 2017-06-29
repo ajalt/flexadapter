@@ -2,7 +2,6 @@ package com.github.ajalt.flexadapter.internal
 
 import android.os.Build
 import android.support.annotation.RequiresApi
-import android.support.annotation.VisibleForTesting
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -24,7 +23,7 @@ internal interface ObservableList<T> : MutableList<T> {
 }
 
 internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
-    @VisibleForTesting val listeners = WeakHashMap<ObservableList.OnListChangedCallback<T>, Void>()
+    private val listeners = WeakHashMap<ObservableList.OnListChangedCallback<T>, Void>()
 
     override fun registerListener(listener: ObservableList.OnListChangedCallback<T>) {
         listeners.putIfAbsent(listener, null)
