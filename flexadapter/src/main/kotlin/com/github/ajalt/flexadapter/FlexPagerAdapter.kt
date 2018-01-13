@@ -43,7 +43,6 @@ open class FlexPagerAdapter : PagerAdapter() {
         for (item in items) {
             recordItemType(item)
         }
-        val start = this.items.size
         this.items.addAll(items.map { it to null })
         notifyDataSetChanged()
     }
@@ -59,7 +58,7 @@ open class FlexPagerAdapter : PagerAdapter() {
 
     /** Update the [itemCount] items starting at [positionStart] */
     fun notifyItemRangeChanged(positionStart: Int, itemCount: Int) {
-        for (i in positionStart..positionStart + itemCount - 1) {
+        for (i in positionStart until positionStart + itemCount) {
             notifyItemChanged(i)
         }
     }

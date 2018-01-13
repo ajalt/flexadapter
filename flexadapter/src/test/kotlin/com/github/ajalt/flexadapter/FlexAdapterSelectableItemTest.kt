@@ -21,12 +21,12 @@ class TestSelectableItem(val tag: String = "") : FlexAdapterSelectableExtensionI
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
 class FlexAdapterSelectableItemTest {
-    val adapter = FlexAdapter<Any>()
-    val selectablePrimitive = "selectable"
-    val regularPrimitive = 3
-    val regularItem = TestRegularItem("regularItem")
-    val selectableItem1 = TestSelectableItem("selectableItem1")
-    val selectableItem2 = TestSelectableItem("selectableItem2")
+   private val adapter = FlexAdapter<Any>()
+   private val selectablePrimitive = "selectable"
+   private val regularPrimitive = 3
+   private val regularItem = TestRegularItem("regularItem")
+   private val selectableItem1 = TestSelectableItem("selectableItem1")
+   private val selectableItem2 = TestSelectableItem("selectableItem2")
 
     @Before
     fun setup() {
@@ -70,6 +70,35 @@ class FlexAdapterSelectableItemTest {
 
         adapter.selectItem(selectableItem1)
         assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
+    }
+
+    @Test
+    fun `selectItemAt selects correct items`() {
+        adapter.items.addAll(listOf(selectableItem1, regularItem, selectableItem2))
+        assertThat(adapter.selectedItemCount).isEqualTo(0)
+        assertThat(adapter.selectedItems()).isEmpty()
+
+        adapter.selectItemAt(0)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
+        adapter.selectItemAt(1)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem1)
+        adapter.selectItemAt(2)
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+    }
+
+    @Test
+    fun `deselectItemAt deselects correct items`() {
+        adapter.items.addAll(listOf(selectableItem1, regularItem, selectableItem2))
+        adapter.selectAllItems()
+        assertThat(adapter.selectedItemCount).isEqualTo(2)
+        assertThat(adapter.selectedItems()).containsExactlyInAnyOrder(selectableItem1, selectableItem2)
+
+        adapter.deselectItemAt(0)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
+        adapter.deselectItemAt(1)
+        assertThat(adapter.selectedItems()).containsExactly(selectableItem2)
+        adapter.deselectItemAt(2)
+        assertThat(adapter.selectedItems()).isEmpty()
     }
 
     @Test

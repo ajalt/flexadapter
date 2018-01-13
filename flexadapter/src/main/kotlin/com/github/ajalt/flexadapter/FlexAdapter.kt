@@ -184,7 +184,21 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     open fun selectItem(item: T) {
         val i = items.indexOf(item)
         require(i >= 0) { "Cannot select item that is not in adapter." }
+        selectItemImpl(item, i)
+    }
 
+    /**
+     * Mark the item at the given [index] as selected.
+     *
+     * @see selectItem
+     * @param index The index of the item to mark as selected.
+     */
+    open fun selectItemAt(index: Int) {
+        require(index in items.indices) { "Cannot select index that is not in adapter." }
+        selectItemImpl(items[index], index)
+    }
+
+    private fun selectItemImpl(item: T, i: Int) {
         if (isSelectable(item)) {
             selectedItems.add(item)
             notifyItemChanged(i)
@@ -205,6 +219,22 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     open fun deselectItem(item: T) {
         val i = items.indexOf(item)
         if (i < 0) return
+        deselectItemImpl(item, i)
+    }
+
+    /**
+     * Mark the item at [index] as not selected.
+     *
+     * @see deselectItem
+     * @param index The index of the item to deselect.
+     * @throws IllegalArgumentException if [index] is not a valid index in [items]
+     */
+    open fun deselectItemAt(index: Int) {
+        require(index in items.indices) { "Cannot deselect index that is not in adapter." }
+        deselectItemImpl(items[index], index)
+    }
+
+    private fun deselectItemImpl(item: T, i: Int) {
         if (isSelectable(item)) {
             selectedItems.remove(item)
             notifyItemChanged(i)
@@ -465,7 +495,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     @Synchronized
     private fun putItemAttrs(cls: Class<*>, itemType: Int?, itemAttrs: ItemAttrs) {
-        val predicate = { cls: Class<*>, it: Any -> cls.isAssignableFrom(it.javaClass) }
+        val predicate = { clz: Class<*>, it: Any -> clz.isAssignableFrom(it.javaClass) }
         val reregistered = itemAttrsByBaseClass.put(cls, predicate to itemAttrs) != null
         if (reregistered) invalidateItemTypeCache()
         val hashCode = System.identityHashCode(cls)
