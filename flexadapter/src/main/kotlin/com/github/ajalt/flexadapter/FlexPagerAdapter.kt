@@ -68,7 +68,7 @@ open class FlexPagerAdapter : PagerAdapter() {
     override fun getCount(): Int = items.size
 
     /** @suppress */
-    override fun instantiateItem(container: ViewGroup, position: Int): Any? {
+    override fun instantiateItem(container: ViewGroup, position: Int): Any {
         val vh = items[position].second ?:
                 viewHolderFactoriesByItemType[items[position].first.itemType]!!.invoke(container)
         items[position].first.bindErasedViewHolder(vh, position)
@@ -77,10 +77,11 @@ open class FlexPagerAdapter : PagerAdapter() {
     }
 
     /** @suppress */
-    override fun isViewFromObject(view: View?, o: Any?): Boolean = view == o
+    override fun isViewFromObject(view: View, o: Any): Boolean = view == o
+
 
     /** @suppress */
-    override fun destroyItem(container: ViewGroup, position: Int, o: Any?) {
+    override fun destroyItem(container: ViewGroup, position: Int, o: Any) {
         container.removeView(o as View)
     }
 

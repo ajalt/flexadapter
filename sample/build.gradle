@@ -1,14 +1,10 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.neenbedankt.android-apt'
-apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
     dependencies {
-        classpath deps.androidApt
-        classpath deps.gradleRetrolambda
         classpath deps.buildscript.versions
     }
 }
@@ -50,7 +46,5 @@ dependencies {
     compile deps.kotlinStdlib
     compile deps.butterknife
 
-    apt deps.butterknifeCompiler
-
-    retrolambdaConfig deps.retrolambda
+    annotationProcessor deps.butterknifeCompiler
 }
