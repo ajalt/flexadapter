@@ -30,7 +30,7 @@ recyclerView.layoutManager = layoutManager
 
 #### Define your item types:
 
-``` kotlin
+```kotlin
 // This item will be a text header with a span of three that can be swiped horizontally to dismiss.
 class TextItem(var text: String) :
         FlexAdapterExtensionItem(R.layout.item_text, span = 3, swipeDirs = HORIZONTAL) {
@@ -118,7 +118,7 @@ adapter.selectItem("Title")
 
 # API Documentation
 
-API documentation is hosted online [here](https://jitpack.io/com/github/ajalt/flexadapter/2.1.0/javadoc/flexadapter/com.github.ajalt.flexadapter/index.html).
+API documentation is hosted online [here](https://jitpack.io/com/github/ajalt/flexadapter/2.2.0/javadoc/flexadapter/com.github.ajalt.flexadapter/index.html).
 
 # Sample project
 
@@ -129,7 +129,7 @@ To see more of the features of FlexAdapter in use, check out the Kotlin sample a
 
 # FlexAdapter for a ViewPager
 
-This library also includes an adapter for a `ViewPager` that provides the same interface as the regular `FlexAdapter`: the [FlexPagerAdapter](https://jitpack.io/com/github/ajalt/flexadapter/2.1.0/javadoc/flexadapter/com.github.ajalt.flexadapter/-flex-pager-adapter/index.html)
+This library also includes an adapter for a `ViewPager` that provides the same interface as the regular `FlexAdapter`: the [FlexPagerAdapter](https://jitpack.io/com/github/ajalt/flexadapter/2.2.0/javadoc/flexadapter/com.github.ajalt.flexadapter/-flex-pager-adapter/index.html)
 
 ```kotlin
 val adapter = FlexPagerAdapter()
@@ -149,7 +149,7 @@ You can see a sample that uses the `FlexPagerAdapter` [here](sample/src/main/kot
 
 # Download
 
-FlexAdapter is distributed with [JitPack](https://jitpack.io/#ajalt/flexadapter/2.1.0)
+FlexAdapter is distributed with [JitPack](https://jitpack.io/#ajalt/flexadapter/2.2.0)
 
 ```groovy
 repositories {
@@ -157,13 +157,13 @@ repositories {
 }
 
 dependencies {
-   compile 'com.github.ajalt:flexadapter:2.1.0'
+   compile 'com.github.ajalt:flexadapter:2.2.0'
 }
 ```
 
 # License
 ```
-Copyright 2016 AJ Alt
+Copyright 2018 AJ Alt
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
