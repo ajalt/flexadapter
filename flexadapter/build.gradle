@@ -26,16 +26,14 @@ android {
 }
 
 dependencies {
-    compile deps.supportV7
-    compile deps.supportRecyclerView
-    compile deps.supportAnnotations
-    compile deps.kotlinStdlib
+    api deps.supportRecyclerView
+    api deps.kotlinStdlib
 
-    testCompile deps.robolectric
-    testCompile deps.junit
-    testCompile deps.mockito
-    testCompile (deps.mockitoKotlin) { exclude module: 'kotlin-stdlib' }
-    testCompile deps.assertJ
+    testImplementation deps.robolectric
+    testImplementation deps.junit
+    testImplementation deps.mockito
+    testImplementation (deps.mockitoKotlin) { exclude module: 'kotlin-stdlib' }
+    testImplementation deps.assertJ
 }
 
 task sourcesJar(type: Jar) {

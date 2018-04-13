@@ -37,14 +37,13 @@ android {
 }
 
 dependencies {
-    compile project(':flexadapter')
+    implementation project(':flexadapter')
 
-    compile deps.supportV7
-    compile deps.supportDesign
-    compile deps.supportRecyclerView
-    compile deps.supportAnnotations
-    compile deps.kotlinStdlib
-    compile deps.butterknife
+    implementation deps.supportDesign
+    implementation deps.supportRecyclerView
+    implementation deps.supportAnnotations
+    implementation deps.kotlinStdlib
+    implementation deps.butterknife
 
     annotationProcessor deps.butterknifeCompiler
 }

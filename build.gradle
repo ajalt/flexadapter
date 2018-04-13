@@ -5,30 +5,29 @@ buildscript {
             minSdk        : 14,
             targetSdk     : 27,
             compileSdk    : 27,
-            buildTools    : '26.0.2',
+            buildTools    : '27.0.3',
 
-            kotlin        : '1.2.10',
-            supportLibrary: '27.0.2',
+            kotlin        : '1.2.31',
+            supportLibrary: '27.1.1',
     ]
 
     ext.deps = [
             buildscript        : [
                     kotlin  : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-                    dokka   : 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.15',
+                    dokka   : 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16',
                     versions: 'com.github.ben-manes:gradle-versions-plugin:0.17.0',
             ],
 
             // library dependencies
-            supportV7          : "com.android.support:appcompat-v7:${versions.supportLibrary}@aar",
             supportRecyclerView: "com.android.support:recyclerview-v7:${versions.supportLibrary}",
             kotlinStdlib       : "org.jetbrains.kotlin:kotlin-stdlib:${versions.kotlin}",
 
             // test dependencies
-            robolectric        : 'org.robolectric:robolectric:3.6.1',
+            robolectric        : 'org.robolectric:robolectric:3.8',
             junit              : 'junit:junit:4.12',
-            mockito            : 'org.mockito:mockito-core:2.13.0',
+            mockito            : 'org.mockito:mockito-core:2.18.0',
             mockitoKotlin      : 'com.nhaarman:mockito-kotlin:1.5.0',
-            assertJ            : 'org.assertj:assertj-core:3.9.0',
+            assertJ            : 'org.assertj:assertj-core:3.9.1',
 
             // sample dependencies
             supportDesign      : "com.android.support:design:${versions.supportLibrary}",
@@ -42,8 +41,8 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.0'
+        classpath 'com.android.tools.build:gradle:3.1.1'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath deps.buildscript.versions
     }
 }
