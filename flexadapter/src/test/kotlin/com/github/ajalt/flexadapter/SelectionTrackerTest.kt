@@ -15,18 +15,18 @@ class TestItem(val tag: String = "") : FlexAdapterExtensionItem(0) {
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class FlexAdapterSelectableItemTest {
-    val adapter = FlexAdapter<Any>().apply {
+class SelectionTrackerTest {
+    private val adapter = FlexAdapter<Any>().apply {
         register<Int>(0)
         register<String>(0)
     }
-    val tracker = adapter.selectionTracker()
-    val stringItem = "selectable"
-    val intItem = 3
-    val intItem2 = 7
-    val testItem = TestItem("regularItem")
+    private val tracker = adapter.selectionTracker()
+    private val stringItem = "selectable"
+    private val intItem = 3
+    private val intItem2 = 7
+    private val testItem = TestItem("regularItem")
 
-    fun assertTrackedValues(vararg items: Any) {
+    private fun assertTrackedValues(vararg items: Any) {
         with(SoftAssertions()) {
             assertThat(tracker.selectedItemCount).isEqualTo(items.size)
             if (items.isEmpty()) {
@@ -145,6 +145,32 @@ class FlexAdapterSelectableItemTest {
         assertTrackedValues(testItem, intItem, stringItem)
         tracker.selectAllItems()
         assertTrackedValues(testItem, intItem, stringItem)
+    }
+
+    @Test
+    fun `selectItemAt selects correct items`() {
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        assertTrackedValues()
+        tracker.selectItemAt(0)
+        assertTrackedValues(testItem)
+        tracker.selectItemAt(1)
+        assertTrackedValues(testItem, intItem)
+        tracker.selectItemAt(2)
+        assertTrackedValues(testItem, intItem, stringItem)
+    }
+
+    @Test
+    fun `deselectItemAt deselects correct items`() {
+        adapter.items.addAll(listOf(testItem, intItem, stringItem))
+        tracker.selectAllItems()
+        assertTrackedValues(testItem, intItem, stringItem)
+
+        tracker.deselectItemAt(0)
+        assertTrackedValues(intItem, stringItem)
+        tracker.deselectItemAt(1)
+        assertTrackedValues(stringItem)
+        tracker.deselectItemAt(2)
+        assertTrackedValues()
     }
 
     @Test
@@ -357,6 +383,7 @@ class FlexAdapterSelectableItemTest {
         adapter.items.removeAt(0)
         assertTrackedValues()
     }
+
     @Test
     fun `removing multiple items after deselectAll deselects them`() {
         adapter.items.addAll(listOf(testItem, intItem, intItem2, stringItem))
@@ -370,6 +397,7 @@ class FlexAdapterSelectableItemTest {
         adapter.items.removeAll(listOf(intItem, intItem2))
         assertTrackedValues(testItem)
     }
+
     @Test
     fun `removing all items after deselectAll deselects them`() {
         adapter.items.addAll(listOf(testItem, intItem))

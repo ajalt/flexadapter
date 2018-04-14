@@ -102,6 +102,21 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
     fun selectItem(item: T) {
         val i = adapter.items.indexOf(item)
         require(i >= 0) { "Cannot select item that is not in adapter." }
+        selectItemImpl(item, i)
+    }
+
+    /**
+     * Mark the item at the given [index] as selected.
+     *
+     * @see selectItem
+     * @param index The index of the item to mark as selected.
+     */
+    fun selectItemAt(index: Int) {
+        require(index in adapter.items.indices) { "Cannot select index that is not in adapter." }
+        selectItemImpl(adapter.items[index], index)
+    }
+
+    private fun selectItemImpl(item: T, i: Int) {
         if (allSelected) disjointItems.remove(item)
         else disjointItems.add(item)
         adapter.notifyItemChanged(i)
@@ -110,15 +125,29 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
     /**
      * Mark an item as not selected.
      *
-     * This will cause the view to update.
-     *
-     * If the item is not already in the adapter, this call has no effect.
+     * This will cause the view to update. If the item is not already in the adapter, this call has no effect.
      *
      * @param item The item to mark as not selected.
      */
     fun deselectItem(item: T) {
         val i = adapter.items.indexOf(item)
         if (i < 0) return
+        deselectItemImpl(item, i)
+    }
+
+    /**
+     * Mark the item at [index] as not selected.
+     *
+     * @see deselectItem
+     * @param index The index of the item to deselect.
+     * @throws IllegalArgumentException if [index] is not a valid index in the adapter
+     */
+    fun deselectItemAt(index: Int) {
+        require(index in adapter.items.indices) { "Cannot deselect index that is not in adapter." }
+        deselectItemImpl(adapter.items[index], index)
+    }
+
+    private fun deselectItemImpl(item: T, i: Int) {
         trackDeselection(item)
         adapter.notifyItemChanged(i)
     }
