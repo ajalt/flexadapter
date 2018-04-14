@@ -37,7 +37,7 @@ abstract class FlexAdapterExtensionItem(@LayoutRes val layoutRes: Int,
         ViewHolder(LayoutInflater.from(it.context).inflate(layoutRes, it, false))
     }
 
-    override final fun bindViewHolder(holder: ViewHolder, position: Int) {
+    final override fun bindViewHolder(holder: ViewHolder, position: Int) {
         bindItemView(holder.itemView, position)
     }
 

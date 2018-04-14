@@ -56,7 +56,7 @@ class SelectionTracker<T : Any> private constructor(private val adapter: FlexAda
 
         override fun onItemRangeInserted(sender: ObservableList<T>, start: Int, count: Int) {
             if (allSelected) {
-                for (i in start..start + count - 1) {
+                for (i in start until start + count) {
                     trackDeselection(sender[i])
                 }
             }
