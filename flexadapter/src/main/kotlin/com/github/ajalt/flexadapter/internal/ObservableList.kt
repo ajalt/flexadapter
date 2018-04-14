@@ -7,7 +7,7 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
 
-/** A list interface that notifies a listener when it's contents change. */
+/** A list interface that notifies a listener when its contents change. */
 internal interface ObservableList<T> : MutableList<T> {
     interface OnListChangedCallback<T> {
         fun onChanged(sender: ObservableList<T>)
@@ -23,10 +23,10 @@ internal interface ObservableList<T> : MutableList<T> {
 }
 
 internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
-    private val listeners = WeakHashMap<ObservableList.OnListChangedCallback<T>, Void>()
+    private val listeners = WeakHashMap<ObservableList.OnListChangedCallback<T>, Nothing?>()
 
     override fun registerListener(listener: ObservableList.OnListChangedCallback<T>) {
-        listeners.putIfAbsent(listener, null)
+        listeners.getOrPut(listener) { null }
     }
 
     override fun unregisterListener(listener: ObservableList.OnListChangedCallback<T>) {
@@ -47,8 +47,9 @@ internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
         return added
     }
 
-    override fun addAll(index: Int, elements: Collection<T>): Boolean
-            = super.addAll(index, elements).apply { if (this) notifyAdd(index, elements.size) }
+    override fun addAll(index: Int, elements: Collection<T>): Boolean {
+        return super.addAll(index, elements).apply { if (this) notifyAdd(index, elements.size) }
+    }
 
     override fun clear() {
         val oldSize = size
@@ -71,11 +72,9 @@ internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
         return false
     }
 
-    override fun removeAll(elements: Collection<T>): Boolean
-            = super.removeAll(elements).apply { notifyAllChange() }
+    override fun removeAll(elements: Collection<T>): Boolean = super.removeAll(elements).apply { notifyAllChange() }
 
-    override fun retainAll(elements: Collection<T>): Boolean
-            = super.retainAll(elements).apply { notifyAllChange() }
+    override fun retainAll(elements: Collection<T>): Boolean = super.retainAll(elements).apply { notifyAllChange() }
 
     override fun removeRange(fromIndex: Int, toIndex: Int) {
         if (toIndex == fromIndex) return
@@ -97,16 +96,13 @@ internal class ObservableArrayList<T> : ArrayList<T>(), ObservableList<T> {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun replaceAll(operator: UnaryOperator<T>)
-            = super<ArrayList>.replaceAll(operator).apply { notifyAllChange() }
+    override fun replaceAll(operator: UnaryOperator<T>) = super<ArrayList>.replaceAll(operator).apply { notifyAllChange() }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun sort(c: Comparator<in T>?)
-            = super<ArrayList>.sort(c).apply { notifyAllChange() }
+    override fun sort(c: Comparator<in T>?) = super<ArrayList>.sort(c).apply { notifyAllChange() }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    override fun removeIf(filter: Predicate<in T>): Boolean
-            = super<ArrayList>.removeIf(filter).apply { notifyAllChange() }
+    override fun removeIf(filter: Predicate<in T>): Boolean = super<ArrayList>.removeIf(filter).apply { notifyAllChange() }
 
     private fun notifyAdd(start: Int, count: Int) = listeners.forEach { it.key.onItemRangeInserted(this, start, count) }
     private fun notifyRangeRemove(start: Int, count: Int) = listeners.forEach { it.key.onItemRangeRemoved(this, start, count) }

@@ -28,6 +28,7 @@ android {
 dependencies {
     api deps.supportRecyclerView
     api deps.kotlinStdlib
+    api deps.supportAnnotations
 
     testImplementation deps.robolectric
     testImplementation deps.junit
