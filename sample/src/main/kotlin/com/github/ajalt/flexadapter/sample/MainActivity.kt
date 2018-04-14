@@ -11,7 +11,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         button_kotlin_sample.setOnClickListener { startActivity(Intent(this, SampleActivity::class.java)) }
         button_java_sample.setOnClickListener { startActivity(Intent(this, JavaSampleActivity::class.java)) }
-        button_view_pager.setOnClickListener { startActivity(Intent(this, ViewPagerActivity::class.java)) }
         button_stable_ids.setOnClickListener { startActivity(Intent(this, StableIdsActivity::class.java)) }
     }
 }

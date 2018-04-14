@@ -24,13 +24,6 @@
         android:text="Java sample "/>
 
     <Button
-        android:id="@+id/button_view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:text="View Pager"/>
-
-    <Button
         android:id="@+id/button_stable_ids"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

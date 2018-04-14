@@ -127,26 +127,6 @@ To see more of the features of FlexAdapter in use, check out the Kotlin sample a
  or the Java sample app 
 [here](sample/src/main/java/com/github/ajalt/flexadapter/sample/JavaMainActivity.kt)
 
-# FlexAdapter for a ViewPager
-
-This library also includes an adapter for a `ViewPager` that provides the same interface as the regular `FlexAdapter`: the [FlexPagerAdapter](https://jitpack.io/com/github/ajalt/flexadapter/2.2.0/javadoc/flexadapter/com.github.ajalt.flexadapter/-flex-pager-adapter/index.html)
-
-```kotlin
-val adapter = FlexPagerAdapter()
-
-adapter.addItems(
-    TextItem("Look at these pictures"),
-    PictureItem(R.drawable.picture_1),
-    PictureItem(R.drawable.picture_2)
-)
-
-view_pager.adapter = adapter
-```
-
-That's all that's required to implement multiple layouts in a ViewPager. No need to create Fragments or manage lifecycles. The same classes can be used in both the `FlexAdapter` and `FlexPagerAdapter`. The `span`, `dragDirs`, and `swipeDirs` values will just be ignored on items added to a `FlexPagerAdapter`.
-
-You can see a sample that uses the `FlexPagerAdapter` [here](sample/src/main/kotlin/com/github/ajalt/flexadapter/sample/ViewPagerActivity.kt).
-
 # Download
 
 FlexAdapter is distributed with [JitPack](https://jitpack.io/#ajalt/flexadapter/2.2.0)
