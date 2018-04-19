@@ -12,11 +12,11 @@ import com.github.ajalt.flexadapter.FlexAdapter
 import com.github.ajalt.flexadapter.FlexAdapterExtensionItem
 import kotlinx.android.synthetic.main.activity_stable_ids.*
 import kotlinx.android.synthetic.main.item_carousel.view.*
-import kotlinx.android.synthetic.main.item_color_square.view.*
+import kotlinx.android.synthetic.main.item_color_square_small.view.*
 import java.util.*
 
 private class ColorSquareItem(var color: Int = randomColor()) :
-        FlexAdapterExtensionItem(R.layout.item_color_square) {
+        FlexAdapterExtensionItem(R.layout.item_color_square_small) {
     override fun bindItemView(itemView: View, position: Int) = itemView.card.setCardBackgroundColor(color)
 }
 
@@ -51,7 +51,7 @@ private class CarouselItem(var adapter: FlexAdapter<ColorSquareItem> = FlexAdapt
             adapter.notifyDataSetChanged()
         }
 
-        carousel_shuffle.setOnClickListener { Collections.shuffle(adapter.items) }
+        carousel_shuffle.setOnClickListener { adapter.items.shuffle() }
 
         updateButtons(this)
     }
@@ -63,8 +63,10 @@ private class CarouselItem(var adapter: FlexAdapter<ColorSquareItem> = FlexAdapt
     }
 }
 
-fun randomColor(): Int {
-    return Random().run { Color.rgb(nextInt(256), nextInt(256), nextInt(256)) }
+private val rand = Random()
+
+private fun randomColor(): Int {
+    return Color.HSVToColor(floatArrayOf(rand.nextFloat() * 360, 75f, 80f))
 }
 
 private fun View.setVisible(visible: Boolean) {
@@ -102,7 +104,7 @@ class StableIdsActivity : AppCompatActivity() {
             adapter.items.flatMap { it.adapter.items }.forEach { it.color = randomColor() }
         }
 
-        shuffle.setOnClickListener { Collections.shuffle(adapter.items) }
+        shuffle.setOnClickListener { adapter.items.shuffle() }
 
         adapter.items.add(CarouselItem())
         updateButtons()

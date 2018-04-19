@@ -1,12 +1,15 @@
 package com.github.ajalt.flexadapter.sample;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.StringRes;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -21,6 +24,8 @@ import com.github.ajalt.flexadapter.FlexAdapterItem;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Random;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import kotlin.collections.CollectionsKt;
@@ -32,7 +37,13 @@ public class JavaSampleActivity extends AppCompatActivity {
     public static final int ALL_DIRS = HORIZONTAL | VERTICAL;
     public static final int COLUMNS = 3;
 
-    class TextItem extends FlexAdapterItem<TextItem.ViewHolder> {
+    private static final Random rand = new Random();
+
+    private static int randomColor() {
+        return Color.HSVToColor(new float[]{rand.nextFloat() * 360, .75f, .8f});
+    }
+
+    static class TextItem extends FlexAdapterItem<TextItem.ViewHolder> {
         public int text;
         private final int dragDirs;
 
@@ -53,7 +64,7 @@ public class JavaSampleActivity extends AppCompatActivity {
             holder.textView.setText(this.text);
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        public static class ViewHolder extends RecyclerView.ViewHolder {
             @BindView(R.id.text_view) TextView textView;
 
             public ViewHolder(View view) {
@@ -63,7 +74,7 @@ public class JavaSampleActivity extends AppCompatActivity {
         }
     }
 
-    class HeaderItem extends FlexAdapterItem<HeaderItem.ViewHolder> {
+    static class HeaderItem extends FlexAdapterItem<HeaderItem.ViewHolder> {
         public int text;
 
         public HeaderItem(@StringRes int text) { this.text = text; }
@@ -78,7 +89,7 @@ public class JavaSampleActivity extends AppCompatActivity {
             holder.textView.setText(this.text);
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        public static class ViewHolder extends RecyclerView.ViewHolder {
             @BindView(R.id.text_view) TextView textView;
 
             public ViewHolder(View view) {
@@ -88,12 +99,11 @@ public class JavaSampleActivity extends AppCompatActivity {
         }
     }
 
-    class WidePictureItem extends FlexAdapterItem<WidePictureItem.ViewHolder> {
-        public int image;
+    static class WidePictureItem extends FlexAdapterItem<WidePictureItem.ViewHolder> {
         private final int swipeDirs;
+        private final int color = randomColor();
 
-        public WidePictureItem(@DrawableRes int image, int swipeDirs) {
-            this.image = image;
+        public WidePictureItem(int swipeDirs) {
             this.swipeDirs = swipeDirs;
         }
 
@@ -102,15 +112,15 @@ public class JavaSampleActivity extends AppCompatActivity {
         @Override public int getSwipeDirs() { return swipeDirs; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
-            return parent -> new ViewHolder(inflate(parent, R.layout.item_picture));
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_color_square_wide));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
-            holder.imageView.setImageResource(this.image);
+            holder.card.setCardBackgroundColor(color);
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.image_view) ImageView imageView;
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            @BindView(R.id.card) CardView card;
 
             public ViewHolder(View view) {
                 super(view);
@@ -119,25 +129,21 @@ public class JavaSampleActivity extends AppCompatActivity {
         }
     }
 
-    class SquarePictureItem extends FlexAdapterItem<SquarePictureItem.ViewHolder> {
-        public int image;
-
-        public SquarePictureItem(@DrawableRes int image) {
-            this.image = image;
-        }
+    static class SquarePictureItem extends FlexAdapterItem<SquarePictureItem.ViewHolder> {
+        private final int color = randomColor();
 
         @Override public int getDragDirs() { return ALL_DIRS; }
 
         @NotNull @Override public Function1<ViewGroup, ViewHolder> viewHolderFactory() {
-            return parent -> new ViewHolder(inflate(parent, R.layout.item_picture_square));
+            return parent -> new ViewHolder(inflate(parent, R.layout.item_color_square_large));
         }
 
         @Override public void bindViewHolder(@NotNull ViewHolder holder, int position) {
-            holder.imageView.setImageResource(this.image);
+            holder.card.setCardBackgroundColor(color);
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            @BindView(R.id.image_view) ImageView imageView;
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            @BindView(R.id.card) CardView card;
 
             public ViewHolder(View view) {
                 super(view);
@@ -146,7 +152,7 @@ public class JavaSampleActivity extends AppCompatActivity {
         }
     }
 
-    class DividerItem extends FlexAdapterItem<DividerItem.ViewHolder> {
+    static class DividerItem extends FlexAdapterItem<DividerItem.ViewHolder> {
         @Override public int getSpan() {
             return COLUMNS;
         }
@@ -159,7 +165,7 @@ public class JavaSampleActivity extends AppCompatActivity {
             // Nothing to bind for this item
         }
 
-        public class ViewHolder extends RecyclerView.ViewHolder {
+        public static class ViewHolder extends RecyclerView.ViewHolder {
             public ViewHolder(View view) { super(view); }
         }
     }
@@ -179,7 +185,6 @@ public class JavaSampleActivity extends AppCompatActivity {
 
 
     private final FlexAdapter<FlexAdapterItem> adapter = new FlexAdapter<>();
-    private int extraBurtsAdded = 0;
 
     @Override public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -196,15 +201,15 @@ public class JavaSampleActivity extends AppCompatActivity {
 
         adapter.items().addAll(CollectionsKt.listOf(
                 header1,
-                new SquarePictureItem(R.drawable.burt_square_1),
-                new SquarePictureItem(R.drawable.burt_square_2),
-                new SquarePictureItem(R.drawable.burt_square_3),
-                new SquarePictureItem(R.drawable.burt_square_4),
-                new SquarePictureItem(R.drawable.burt_square_5),
-                new SquarePictureItem(R.drawable.burt_square_6),
-                new SquarePictureItem(R.drawable.burt_square_7),
-                new SquarePictureItem(R.drawable.burt_square_8),
-                new SquarePictureItem(R.drawable.burt_square_9),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
+                new SquarePictureItem(),
                 new DividerItem(),
                 new HeaderItem(R.string.title_drag_vertical),
                 new TextItem(R.string.list_drag_01, 0),
@@ -215,9 +220,9 @@ public class JavaSampleActivity extends AppCompatActivity {
                 new TextItem(R.string.list_drag_06, VERTICAL),
                 new DividerItem(),
                 header2,
-                new WidePictureItem(R.drawable.burt_wide_1, HORIZONTAL),
+                new WidePictureItem(HORIZONTAL),
                 new HeaderItem(R.string.title_no_swipe),
-                new WidePictureItem(R.drawable.burt_wide_2, 0)
+                new WidePictureItem(0)
         ));
 
         // Change the header text when the car picture is swiped away
@@ -226,24 +231,11 @@ public class JavaSampleActivity extends AppCompatActivity {
             adapter.notifyItemChanged(adapter.items().indexOf(header2));
         });
 
-        final FlexAdapterItem<?>[] extraBurts = {
-                new SquarePictureItem(R.drawable.burt_square_10),
-                new SquarePictureItem(R.drawable.burt_square_11),
-                new SquarePictureItem(R.drawable.burt_square_12),
-        };
-
         fab.setOnClickListener(v -> {
-            if (extraBurtsAdded >= extraBurts.length) {
-                Snackbar.make(rootView, R.string.snackbar_add_failure, Snackbar.LENGTH_SHORT).show();
-            } else {
-                final FlexAdapterItem<?> item = extraBurts[extraBurtsAdded++];
+                final SquarePictureItem item = new SquarePictureItem();
                 adapter.items().add(adapter.items().indexOf(header1) + 1, item);
                 Snackbar.make(rootView, R.string.snackbar_add_success, Snackbar.LENGTH_SHORT)
-                        .setAction(R.string.action_undo, v1 -> {
-                            adapter.items().remove(item);
-                            extraBurtsAdded--;
-                        }).show();
-            }
+                        .setAction(R.string.action_undo, v1 -> adapter.items().remove(item)).show();
         });
     }
 }

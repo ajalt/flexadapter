@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView
     android:id="@+id/text_view"
-    style="@style/Base.TextAppearance.AppCompat.Body1"
+    style="@style/Base.TextAppearance.AppCompat.Subhead"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"

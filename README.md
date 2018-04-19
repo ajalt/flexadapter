@@ -2,10 +2,6 @@
 	<img src=".web/wordmark.png">
 </h1>
 
-<div align="center">
-	<img src=".web/sample.gif">
-</div>
-
 ### Define and coordinate multiple layouts in a RecyclerView or ViewPager without boilerplate.
 
 - Multiple item layouts in a single adapter with no typecasting.
