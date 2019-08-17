@@ -10,7 +10,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         button_kotlin_sample.setOnClickListener { startActivity(Intent(this, SampleActivity::class.java)) }
-        button_java_sample.setOnClickListener { startActivity(Intent(this, JavaSampleActivity::class.java)) }
         button_stable_ids.setOnClickListener { startActivity(Intent(this, StableIdsActivity::class.java)) }
     }
 }

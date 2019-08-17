@@ -5,7 +5,7 @@ buildscript {
             minSdk        : 19,
             targetSdk     : 28,
             compileSdk    : 28,
-            buildTools    : '28.0.0',
+            buildTools    : '28.0.3',
 
             kotlin        : '1.3.41',
             supportLibrary: '28.0.0',
@@ -32,9 +32,7 @@ buildscript {
             // sample dependencies
             supportDesign      : "com.android.support:design:${versions.supportLibrary}",
             supportCards       : "com.android.support:cardview-v7:${versions.supportLibrary}",
-            supportAnnotations : "com.android.support:support-annotations:${versions.supportLibrary}",
-            butterknife        : 'com.jakewharton:butterknife:8.8.1',
-            butterknifeCompiler: 'com.jakewharton:butterknife-compiler:8.8.1',
+            supportAnnotations : "com.android.support:support-annotations:${versions.supportLibrary}"
     ]
     repositories {
         google()

@@ -1,13 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: 'com.github.ben-manes.versions'
-
-buildscript {
-    dependencies {
-        classpath deps.buildscript.versions
-    }
-}
 
 android {
     compileSdkVersion versions.compileSdk
@@ -23,7 +16,6 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt')
         }
     }
     sourceSets {
@@ -42,9 +34,5 @@ dependencies {
     implementation deps.supportDesign
     implementation deps.supportCards
     implementation deps.supportRecyclerView
-    implementation deps.supportAnnotations
     implementation deps.kotlinStdlib
-    implementation deps.butterknife
-
-    annotationProcessor deps.butterknifeCompiler
 }
