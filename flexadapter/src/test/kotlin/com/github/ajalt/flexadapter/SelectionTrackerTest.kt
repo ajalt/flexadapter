@@ -2,17 +2,14 @@ package com.github.ajalt.flexadapter
 
 import android.view.View
 import io.kotlintest.assertSoftly
-import io.kotlintest.matchers.beEmpty
-import io.kotlintest.matchers.collections.shouldContainExactly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
-import io.kotlintest.should
 import io.kotlintest.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-class TestItem(val tag: String = "") : FlexAdapterExtensionItem(0) {
+class TestItem(val tag: String = "") : CachingAdapterItem(0) {
     override fun toString() = super.toString() + ":$tag"
     override fun bindItemView(itemView: View, position: Int) = Unit
 }

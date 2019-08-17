@@ -6,14 +6,15 @@ import android.support.annotation.LayoutRes
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.util.SparseArray
+import android.util.SparseIntArray
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import com.github.ajalt.flexadapter.internal.ObservableArrayList
 import com.github.ajalt.flexadapter.internal.ObservableList
 import java.util.*
 
-/** @see FlexAdapterItem */
+/** @see AdapterItem */
 internal interface FlexAdapterItemAttrs {
     val span: Int
     val swipeDirs: Int
@@ -21,16 +22,7 @@ internal interface FlexAdapterItemAttrs {
     val stableId: Long
 }
 
-/**
- * A callback that binds a model to a view.
- *
- * The arguments to the callback are
- *
- *  - The model to be bound
- *  - The view to bind to
- *  - The index of the item in the adapter
- */
-typealias FlexAdapterViewBinder<T> = (T, View, Int) -> Unit
+private typealias ErasedViewBinder = CachingViewHolder.(Int, Any) -> Unit
 
 private data class ItemAttrs(
         @LayoutRes val layout: Int,
@@ -38,7 +30,7 @@ private data class ItemAttrs(
         override val swipeDirs: Int,
         override val dragDirs: Int,
         override val stableId: Long,
-        val viewBinder: (Any, View, Int) -> Unit
+        val viewBinder: ErasedViewBinder
 ) : FlexAdapterItemAttrs
 
 /**
@@ -50,14 +42,6 @@ private data class ItemAttrs(
  */
 open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = true) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    interface ItemSwipedListener<in T> {
-        fun onItemSwiped(item: T)
-    }
-
-    interface ItemDraggedListener<in T> {
-        fun onItemDragged(item: T, from: Int, to: Int)
-    }
-
     private val listListener = object : ObservableList.OnListChangedCallback<T> {
         var enabled = true
         override fun onChanged(sender: ObservableList<T>) = if (enabled) {
@@ -87,14 +71,14 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private var itemDraggedListener: ((T, Int, Int) -> Unit)? = null
 
-    /** A map of item type to factories created from [FlexAdapterItem.viewHolderFactory] */
-    private val viewHolderFactoriesByItemType = HashMap<Int, (ViewGroup) -> RecyclerView.ViewHolder>()
+    /** A map of item type to factories created from [AdapterItem.viewHolderFactory] */
+    private val viewHolderFactoriesByItemType = SparseArray<(ViewGroup) -> RecyclerView.ViewHolder>()
     /**
      * A map of item type to [ItemAttrs].
      *
      * The key is either the default item type, or a custom view type if one is registered.
      */
-    private val itemAttrsByItemType = HashMap<Int, ItemAttrs>()
+    private val itemAttrsByItemType = SparseArray<ItemAttrs>()
     /**
      * The keys in [itemAttrsByItemType] that correspond to cached entries.
      *
@@ -111,17 +95,18 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      */
     private val itemAttrsByBaseClass = IdentityHashMap<Class<*>, Pair<(Class<*>, Any) -> Boolean, ItemAttrs>>()
     /** A map of concrete class view type to custom view type. */
-    private val customViewTypes = HashMap<Int, Int>()
+    private val customViewTypes = SparseIntArray(0)
     private var callDragListenerOnDropOnly: Boolean = true
+    private val _items = ObservableArrayList<T>().apply { registerListener(listListener) }
 
     /**
      * The items in this adapter.
      *
      * Changes to this list will automatically be reflected in the adapter.
      */
-    val items: MutableList<T> = ObservableArrayList<T>().apply { registerListener(listListener) }
-        @JvmName("items")
-        get
+    var items: MutableList<T>
+        get() = _items
+        set(value) = resetItems(value)
 
     /**
      * Clear the list of items and replace them with at new list.
@@ -142,11 +127,6 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     /** Set or clear a listener that will be notified when an item is dismissed with a swipe. */
     open var itemSwipedListener: ((item: T) -> Unit)? = null
 
-    /** A version of [itemSwipedListener] that takes an interface that's easier to call from Java. */
-    open fun setItemSwipedListener(listener: ItemSwipedListener<T>) {
-        itemSwipedListener = { listener.onItemSwiped(it) }
-    }
-
     /**
      * Set or clear a listener that will be called when an item in the adapter is dragged.
      *
@@ -160,22 +140,17 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     /**
-     * A version of [setItemDraggedListener] that takes an interface that's easier to call from Java.
-     */
-    @JvmOverloads
-    open fun setItemDraggedListener(callOnDropOnly: Boolean = true, listener: ItemDraggedListener<T>) {
-        itemDraggedListener = { item, from, to -> listener.onItemDragged(item, from, to) }
-        callDragListenerOnDropOnly = callOnDropOnly
-    }
-
-    /**
      * Move an item from within the adapter.
      *
      * Both arguments must be valid indexes into the list of items.
      */
     open fun moveItem(from: Int, to: Int) {
-        require(from >= 0 && from < items.size) { "Invalid index $from for list of size ${items.size}" }
-        require(to >= 0 && to < items.size) { "Invalid index $to for list of size ${items.size}" }
+        if (from !in items.indices) {
+            throw IndexOutOfBoundsException("Invalid index $from for list of size ${items.size}")
+        }
+        if (to !in items.indices) {
+            throw IndexOutOfBoundsException("Invalid index $to for list of size ${items.size}")
+        }
 
         if (from == to) return
 
@@ -291,7 +266,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      * Register a type with a [FlexAdapter].
      *
      * This must be called for each type that you want to add to the adapter,
-     * unless the type is derived from [FlexAdapterItem].
+     * unless the type is derived from [AdapterItem].
      *
      * You may call this more than once on the same type. Subsequent calls will replace the registered
      * [viewBinder]. If you want to also change the [layout], you must also give a new value for
@@ -299,23 +274,43 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      *
      * You may omit the [viewBinder] if there is no information to bind (for example, inserting a divider).
      *
+     * ## Example
+     *
+     * ```
+     * adapter.register<String>(R.layout.message) {
+     *   view<TextView>(R.id.title).text = it
+     * }
+     * ```
+     *
      * @param U The type to register. Must be [T] or a subclass of [T].
      * @param layout The layout resource to use for items of this type.
      * @param span The span to use for items of this type when the layout manager supports it.
      * @param swipeDirs The swipe direction flags to use with the [ItemTouchHelper].
      * @param dragDirs The drag direction flags to use with the [ItemTouchHelper].
      * @param viewType If given, the value to return from [FlexAdapter.getItemViewType]. This is usually not necessary.
-     * @param viewBinder The implementation of [RecyclerView.Adapter.bindViewHolder] for items of this type.
+     * @param viewBinder The implementation of [CachingAdapterItem.bindItemView] for items of this type.
      */
-    inline fun <reified U: T> register(
+    inline fun <reified U : T> register(
             @LayoutRes layout: Int,
             span: Int = 1,
             swipeDirs: Int = 0,
             dragDirs: Int = 0,
             viewType: Int? = null,
-            crossinline viewBinder: FlexAdapterViewBinder<T> = { _, _, _ -> }
+            crossinline viewBinder: CachingViewHolder.(U) -> Unit = {}
     ) {
-        registerType(U::class.java, layout, span, swipeDirs, dragDirs, viewType) { any, v, i -> viewBinder(any as U, v, i) }
+        registerType(U::class.java, layout, span, swipeDirs, dragDirs, viewType) { _, any -> viewBinder(any as U) }
+    }
+
+    /** Like [register], but the [viewBinder] also receives the item index */
+    inline fun <reified U : T> registerIndexed(
+            @LayoutRes layout: Int,
+            span: Int = 1,
+            swipeDirs: Int = 0,
+            dragDirs: Int = 0,
+            viewType: Int? = null,
+            crossinline viewBinder: CachingViewHolder.(Int, U) -> Unit = { _, _ -> }
+    ) {
+        registerType(U::class.java, layout, span, swipeDirs, dragDirs, viewType) { i, any -> viewBinder(i, any as U) }
     }
 
     @Synchronized
@@ -326,16 +321,17 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
             // the item hans't been registered, it will throw so that we fail when an item is added
             // instead of bound.
             when (val item = items[i]) {
-                is FlexAdapterItem<*> -> recordItemType(item)
+                is AdapterItem<*> -> recordItemType(item)
                 else -> attrsOf(item)
             }
         }
     }
 
-    private fun recordItemType(item: FlexAdapterItem<*>) {
+    private fun recordItemType(item: AdapterItem<*>) {
         val type = item.itemType
-        if (!viewHolderFactoriesByItemType.containsKey(type)) {
-            viewHolderFactoriesByItemType[type] = item.viewHolderFactory()
+
+        if (viewHolderFactoriesByItemType.indexOfKey(type) < 0) {
+            viewHolderFactoriesByItemType.put(type, item.viewHolderFactory())
         }
     }
 
@@ -354,7 +350,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     /** @suppress */
     override fun getItemViewType(position: Int): Int = items[position].let {
-        (it as? FlexAdapterItem<*>)?.itemType ?: itemAttrsKey(it)
+        (it as? AdapterItem<*>)?.itemType ?: itemAttrsKey(it)
     }
 
     /** @suppress */
@@ -366,16 +362,16 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
 
     private fun createViewHolderFromAttr(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val attrs = itemAttrsByItemType[viewType] ?: throw unregisteredTypeError()
-        return FlexAdapterExtensionItem.ViewHolder(
-                LayoutInflater.from(parent.context).inflate(attrs.layout, parent, false))
+        val itemView = LayoutInflater.from(parent.context).inflate(attrs.layout, parent, false)
+        return CachingViewHolder(itemView)
     }
 
     /** @suppress */
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
         when (val attrs = attrsOf(item)) {
-            is FlexAdapterItem<*> -> attrs.bindErasedViewHolder(holder, position)
-            is ItemAttrs -> attrs.viewBinder(item, holder.itemView, position)
+            is AdapterItem<*> -> attrs.bindErasedViewHolder(holder, position)
+            is ItemAttrs -> attrs.viewBinder(holder as CachingViewHolder, position, item)
             else -> throw IllegalStateException("Cannot bind to $item")
         }
     }
@@ -388,12 +384,17 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     }
 
     /** @suppress */
-    override fun getItemId(position: Int) = attrsAt(position).stableId
+    override fun getItemId(position: Int): Long {
+        return when (val attrs = attrsAt(position)) {
+            is ItemAttrs -> items[position].hashCode().toLong()
+            else -> attrs.stableId
+        }
+    }
 
     @PublishedApi
     internal fun registerType(cls: Class<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
-                                   dragDirs: Int, viewType: Int?, viewBinder: (Any, View, Int) -> Unit) {
-        require(!FlexAdapterItem::class.java.isAssignableFrom(cls)) {
+                              dragDirs: Int, viewType: Int?, viewBinder: ErasedViewBinder) {
+        require(!AdapterItem::class.java.isAssignableFrom(cls)) {
             "Cannot register types inheriting from FlexAdapterItem."
         }
         putItemAttrs(cls, viewType, ItemAttrs(layout, span, swipeDirs, dragDirs, RecyclerView.NO_ID, viewBinder))
@@ -405,9 +406,9 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         val reregistered = itemAttrsByBaseClass.put(cls, predicate to itemAttrs) != null
         if (reregistered) invalidateItemTypeCache()
         val hashCode = System.identityHashCode(cls)
-        itemAttrsByItemType[itemType ?: hashCode] = itemAttrs
+        itemAttrsByItemType.put(itemType ?: hashCode, itemAttrs)
         if (itemType != null) {
-            customViewTypes[hashCode] = itemType
+            customViewTypes.put(hashCode, itemType)
         }
 
         // We need to record all items again so that their view types added back to the cache
@@ -417,7 +418,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     private fun invalidateItemTypeCache() {
         for (itemType in cachedItemsTypes) {
             itemAttrsByItemType.remove(itemType)
-            customViewTypes.remove(itemType)
+            customViewTypes.delete(itemType)
         }
     }
 
@@ -433,8 +434,9 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     private fun itemAttrsKey(item: T): Int {
         val hashCode = System.identityHashCode(item.javaClass)
         // Check isEmpty first to avoid extra map reads in the common case of no custom itemTypes
-        if (customViewTypes.isEmpty()) return hashCode
-        return customViewTypes[hashCode] ?: hashCode
+        if (customViewTypes.size() == 0) return hashCode
+        val v = customViewTypes[hashCode]
+        return if (v == 0) hashCode else v
     }
 
     @Synchronized
@@ -444,10 +446,10 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
         // Cache this subclass to avoid future lookups.
         val hashCode = System.identityHashCode(item.javaClass)
         val customType = customViewTypes[System.identityHashCode(cls)]
-        if (customType == null) {
-            itemAttrsByItemType[hashCode] = pair.second
+        if (customType == 0) {
+            itemAttrsByItemType.put(hashCode, pair.second)
         } else {
-            customViewTypes[hashCode] = customType
+            customViewTypes.put(hashCode, customType)
         }
         cachedItemsTypes.add(hashCode)
         return pair.second

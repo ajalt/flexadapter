@@ -1,72 +1,69 @@
 package com.github.ajalt.flexadapter.sample
 
-import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.CardView
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
-import android.view.LayoutInflater
+import android.support.v7.widget.RecyclerView
 import android.view.View
-import android.view.ViewGroup
+import android.widget.Button
+import com.github.ajalt.flexadapter.CachingAdapterItem
+import com.github.ajalt.flexadapter.CachingViewHolder
 import com.github.ajalt.flexadapter.FlexAdapter
-import com.github.ajalt.flexadapter.FlexAdapterExtensionItem
 import kotlinx.android.synthetic.main.activity_stable_ids.*
-import kotlinx.android.synthetic.main.item_carousel.view.*
-import kotlinx.android.synthetic.main.item_color_square_small.view.*
-import java.util.*
 
-private class ColorSquareItem(var color: Int = randomColor()) :
-        FlexAdapterExtensionItem(R.layout.item_color_square_small) {
-    override fun bindItemView(itemView: View, position: Int) = itemView.card.setCardBackgroundColor(color)
+private class ColorSquareItem(var color: Int = randomColor()) : CachingAdapterItem(R.layout.item_color_square_small) {
+    override fun CachingViewHolder.bindItemView(position: Int) {
+        view<CardView>(R.id.card).setCardBackgroundColor(color)
+    }
+
+    fun changeColor() {
+        color = randomColor()
+    }
 }
 
-private class CarouselItem(var adapter: FlexAdapter<ColorSquareItem> = FlexAdapter()) :
-        FlexAdapterExtensionItem(R.layout.item_carousel) {
+private class CarouselItem(val carousel: FlexAdapter<ColorSquareItem> = FlexAdapter()) :
+        CachingAdapterItem(R.layout.item_carousel) {
     init {
-        adapter.setHasStableIds(true)
-        adapter.items.add(ColorSquareItem())
+        carousel.setHasStableIds(true)
+        carousel.items.add(ColorSquareItem())
     }
 
-    override fun viewHolderFactory(): (ViewGroup) -> ViewHolder = {
-        ViewHolder(LayoutInflater.from(it.context).inflate(layoutRes, it, false).apply {
-            carousel_rv.layoutManager = GridLayoutManager(it.context, 2, GridLayoutManager.HORIZONTAL, false)
-        })
+    override fun CachingViewHolder.initializeItemView() {
+        view<RecyclerView>(R.id.carousel_rv).layoutManager =
+                GridLayoutManager(itemView.context, 2, GridLayoutManager.HORIZONTAL, false)
     }
 
-    override fun bindItemView(itemView: View, position: Int) = itemView.run {
-        carousel_rv.adapter = adapter
-
-        carousel_add.setOnClickListener {
-            adapter.items.add(0, ColorSquareItem())
-            updateButtons(this)
+    override fun CachingViewHolder.bindItemView(position: Int) {
+        fun updateButtons() {
+            view<Button>(R.id.carousel_clear).setVisible(carousel.items.size > 0)
+            view<Button>(R.id.carousel_change).setVisible(carousel.items.size > 0)
+            view<Button>(R.id.carousel_shuffle).setVisible(carousel.items.size > 1)
         }
 
-        carousel_clear.setOnClickListener {
-            adapter.items.clear()
-            updateButtons(this)
+        view<RecyclerView>(R.id.carousel_rv).adapter = carousel
+
+        view<View>(R.id.carousel_add).setOnClickListener {
+            carousel.items.add(0, ColorSquareItem())
+            updateButtons()
         }
 
-        carousel_change.setOnClickListener {
-            adapter.items.forEach { it.color = randomColor() }
-            adapter.notifyDataSetChanged()
+        view<View>(R.id.carousel_clear).setOnClickListener {
+            carousel.items.clear()
+            updateButtons()
         }
 
-        carousel_shuffle.setOnClickListener { adapter.items.shuffle() }
+        view<View>(R.id.carousel_change).setOnClickListener { changeColors() }
 
-        updateButtons(this)
+        view<View>(R.id.carousel_shuffle).setOnClickListener { carousel.items.shuffle() }
+        updateButtons()
     }
 
-    private fun updateButtons(itemView: View) = itemView.run {
-        carousel_clear.setVisible(adapter.items.size > 0)
-        carousel_change.setVisible(adapter.items.size > 0)
-        carousel_shuffle.setVisible(adapter.items.size > 1)
+    fun changeColors() {
+        carousel.items.forEach { it.changeColor() }
+        carousel.notifyDataSetChanged()
     }
-}
-
-private val rand = Random()
-
-private fun randomColor(): Int {
-    return Color.HSVToColor(floatArrayOf(rand.nextFloat() * 360, 75f, 80f))
 }
 
 private fun View.setVisible(visible: Boolean) {
@@ -97,11 +94,7 @@ class StableIdsActivity : AppCompatActivity() {
 
 
         change.setOnClickListener {
-            adapter.items.forEach {
-                it.adapter.items.forEach { it.color = randomColor() }
-                it.adapter.notifyDataSetChanged()
-            }
-            adapter.items.flatMap { it.adapter.items }.forEach { it.color = randomColor() }
+            adapter.items.forEach { it.changeColors() }
         }
 
         shuffle.setOnClickListener { adapter.items.shuffle() }

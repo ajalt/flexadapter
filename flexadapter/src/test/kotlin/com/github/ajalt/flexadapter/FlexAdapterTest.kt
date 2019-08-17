@@ -6,15 +6,13 @@ import androidx.test.core.app.ApplicationProvider
 import com.nhaarman.mockitokotlin2.*
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
-import org.junit.Rule
+import io.kotlintest.shouldThrow
 import org.junit.Test
-import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
-private class C : FlexAdapterExtensionItem(0) {
+private class C : CachingAdapterItem(0) {
     override fun bindItemView(itemView: View, position: Int) = Unit
 }
 
@@ -26,9 +24,6 @@ private class O2 : O()
 @Config(manifest = Config.NONE)
 class FlexAdapterTest {
     private val layout = android.R.layout.test_list_item
-
-    @Rule @JvmField
-    val exception: ExpectedException = ExpectedException.none()
 
     private fun bindViewAt(adapter: FlexAdapter<*>, i: Int) {
         val viewHolder = adapter.onCreateViewHolder(
@@ -73,16 +68,14 @@ class FlexAdapterTest {
     @Test
     fun `unregistered items cannot be added`() {
         val adapter = FlexAdapter<Any>()
-        exception.expect(IllegalArgumentException::class.java)
-        adapter.items.add(1)
+        shouldThrow<IllegalArgumentException> { adapter.items.add(1) }
     }
 
     @Test
     fun `registering FlexAdapterItems raises an exception`() {
         val adapter = FlexAdapter<C>()
-        exception.expect(IllegalArgumentException::class.java)
         adapter.register<C>(layout)
-        adapter.items.addAll(arrayOf(C(), C()))
+        shouldThrow<IllegalArgumentException> { adapter.items.addAll(arrayOf(C(), C())) }
     }
 
     @Test
@@ -90,13 +83,13 @@ class FlexAdapterTest {
         val adapter = FlexAdapter<I>()
         val cb1: Runnable = mock()
         val cb2: Runnable = mock()
-        adapter.register<I>(layout) { _, _, _ -> cb1.run() }
+        adapter.register<I>(layout) { cb1.run() }
 
         adapter.items.addAll(listOf(O2(), O()))
         bindViewAt(adapter, 0)
         verify(cb1).run()
 
-        adapter.register<I>(layout) { _, _, _ -> cb2.run() }
+        adapter.register<I>(layout) { cb2.run() }
 
         bindViewAt(adapter, 0)
         verifyNoMoreInteractions(cb1)

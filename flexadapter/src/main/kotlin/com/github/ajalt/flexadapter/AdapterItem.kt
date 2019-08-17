@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.LazyThreadSafetyMode.NONE
 
 /** An item that holds data for binding in a [FlexAdapter]. */
-abstract class FlexAdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAttrs {
+abstract class AdapterItem<VH : RecyclerView.ViewHolder> : FlexAdapterItemAttrs {
     /**
-     * Return a function that creates a ViewHolder for items for items whose [.itemType] matches this one.
+     * Return a function that creates a ViewHolder for items for items whose `itemType` matches this one.
      *
      * The returned ViewHolder will be bound to different items, so it should not contain
      * item-specific data at creation time. This method should be effectively static.

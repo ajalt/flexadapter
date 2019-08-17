@@ -17,13 +17,6 @@
         android:text="Kotlin sample"/>
 
     <Button
-        android:id="@+id/button_java_sample"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="4dp"
-        android:text="Java sample "/>
-
-    <Button
         android:id="@+id/button_stable_ids"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
