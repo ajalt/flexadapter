@@ -1,6 +1,5 @@
 package com.github.ajalt.flexadapter
 
-import android.view.View
 import io.kotlintest.assertSoftly
 import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotlintest.shouldBe
@@ -11,7 +10,7 @@ import org.robolectric.annotation.Config
 
 class TestItem(val tag: String = "") : CachingAdapterItem(0) {
     override fun toString() = super.toString() + ":$tag"
-    override fun bindItemView(itemView: View, position: Int) = Unit
+    override fun CachingViewHolder.bindItemView(position: Int) {}
 }
 
 @RunWith(RobolectricTestRunner::class)

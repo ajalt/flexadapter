@@ -395,7 +395,8 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     internal fun registerType(cls: Class<*>, @LayoutRes layout: Int, span: Int, swipeDirs: Int,
                               dragDirs: Int, viewType: Int?, viewBinder: ErasedViewBinder) {
         require(!AdapterItem::class.java.isAssignableFrom(cls)) {
-            "Cannot register types inheriting from FlexAdapterItem."
+            "There's no need to register types inheriting from AdapterItem. " +
+                    "Just add them directly to the items list."
         }
         putItemAttrs(cls, viewType, ItemAttrs(layout, span, swipeDirs, dragDirs, RecyclerView.NO_ID, viewBinder))
     }

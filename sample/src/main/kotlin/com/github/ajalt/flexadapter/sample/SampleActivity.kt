@@ -83,7 +83,7 @@ class SampleActivity : AppCompatActivity() {
         val header1 = HeaderItem(R.string.title_drag_all)
         val header2 = HeaderItem(R.string.title_swipe)
 
-        adapter.items.addAll(arrayOf(header1,
+        adapter.items.addAll(listOf(header1,
                 SquarePictureItem(),
                 SquarePictureItem(),
                 SquarePictureItem(),

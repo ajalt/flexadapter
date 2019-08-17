@@ -2,15 +2,13 @@
 	<img src=".web/wordmark.png">
 </h1>
 
-### Define and coordinate multiple layouts in a RecyclerView or ViewPager without boilerplate.
+### Define and coordinate multiple layouts in a RecyclerView  without boilerplate.
 
 - Multiple item layouts in a single adapter with no typecasting.
 - Per-item span, swipe, and drag behavior in a RecyclerView in just a few lines of code.
-- Add, remove, and update multiple layouts in a ViewPager without touching Fragments.
+- Define all your view bindings without inheritance or custom ViewHolders
 
 # Usage
-
-The examples will be in Kotlin, but this library works just as well with Java.
 
 #### Create the adapter:
 
@@ -24,92 +22,74 @@ layoutManager.spanSizeLookup = adapter.spanSizeLookup
 recyclerView.layoutManager = layoutManager
 ```
 
-#### Define your item types:
+#### Register your view bindings:
 
 ```kotlin
 // This item will be a text header with a span of three that can be swiped horizontally to dismiss.
-class TextItem(var text: String) :
-        FlexAdapterExtensionItem(R.layout.item_text, span = 3, swipeDirs = HORIZONTAL) {
-    override fun bindItemView(itemView: View, position: Int) {
-        itemView.text_view.text = text
-    }
+adapter.register<String>(R.layout.text_item, span = 3, swipeDirs = HORIZONTAL) {
+    // View lookup is cached. You could also Android data binding or Kotlin Android Extensions instead. 
+    view<TextView>(R.id.text_view).text = it
 }
 
 // This will be a picture loaded from a resource the can be reordered by dragging in any direction.
-class PictureItem(@DrawableRes val imageRes: Int) :
-        FlexAdapterExtensionItem(R.layout.item_picture, dragDirs = ALL_DIRS) {
-    override fun bindItemView(itemView: View, position: Int) {
-        itemView.image_view.setImageResource(imageRes)
-    }
+data class Picture(val resId: Int, var caption: Text)
+adapter.register<Picture>(R.layout.picture_item, dragDirs = ALL_DIRS) {
+    view<ImageView>(R.id.image_view).setImageResource(it.resId)
+    view<TextView>(R.id.caption).setImageResource(it.caption)
 }
 ```
 
-Each layout in the adapter gets its own item class, which has fields for any
-mutable data in its layout. Since the items own the data and know how to bind
-it to a view holder, there are no intermediate data holder classes, no
-interfaces, and no casting to a base class and back.
-
-##### Using your own data models
-
-If you're using Kotlin, you don't even need your items to inherit from `FlexAdapterItem`. You can register a view binder for each type you'd like to add instead:
-
-```kotlin
-val adapter = FlexAdapter<String>()
-adapter.register<String>(R.layout.text_layout) { str, view, position ->
-    view.text_view.text = str
-}
-adapter.add("title")
-```
-
-You can use `register` in the same adapter that you add `FlexAdapterItem`s, pick whichever method you prefer.
+Each type of item you want is registered before you add it to the to add to the adapter. 
 
 #### Then add some items:
 
 ```kotlin
 adapter.items.addAll(listOf(
-    TextItem("Look at these pictures"),
-    PictureItem(R.drawable.picture_1),
-    PictureItem(R.drawable.picture_2)
+    "Look at these pictures",
+    Picture(R.drawable.picture_1, "First Picture"),
+    Picture(R.drawable.picture_2, "Second Picture")
 ))
 ```
 
-All structural changes to the `items` list automatically updated the `RecyclerView`. No need to call `noifyItemRangeAdded`.
+All structural changes to the `items` list automatically update the `RecyclerView`. No need to call
+`noifyItemRangeAdded`.
 
 #### Update an existing item:
 
 ```kotlin
-// If we added this TextItem earlier
-textItem.text = "Look at this new text"
-adapter.notifyItemChanged(textItem)
+// If we added this Picture earlier
+picture.text = "Look at this new text"
+adapter.notifyItemChanged(picture)
 ```
 
 When you want to update an item, just change its data and notify the adapter that it changed.
 
-That's it. No managing indices. No casting from interfaces or Object. 
-Just fast, simple code that does exactly what you want.
+#### Per-item spans and drag directions
+
+If you want different items of the same class to have different spans or drag directions, you can have your
+item classes inherit from `AdapterItem` or `CachedAdapterItem`. Implementations of those classes don't need to
+be `register`ed, and can each instance can have difference `dragDir`s and `span`s.
+
+### Stable item ids
+
+You can optionally tun on stable ids with `adapter.setHasStableIds(true)`. By default, `AdapterItem`
+subclasses will each get a unique id per-instance, and item hash codes will be used for other types. You can
+customize the stable ids in subclasses of `AdapterItem`.
 
 ### Item selection
 
-FlexAdapter can manage a set of selected items and pass the selection state to your view binders. Just inherit from `FlexAdapterSelectableItem` or use the `register` overload that takes the boolean selection state.
+FlexAdapter can manage a set of selected items and keep it in sync with changes to the adapter items.
 
 ```kotlin
-class PictureItem(@DrawableRes val imageRes: Int) :
-        FlexAdapterSelectableExtensionItem(R.layout.item_picture, dragDirs = ALL_DIRS) {
-    override fun bindItemView(itemView: View, selected:Boolean, position: Int) {
-        itemView.image_view.setImageResource(imageRes)
-        itemView.switch.selected = selected
-    }
+val adapter = FlexAdapter<String>()
+val selection = adapter.selectionTracker()
+adapter.register<String>(R.layout.text_item) {
+    view<TextView>(R.id.text_view).text = it
+    view<Switch>(R.id.switch).selected = selection.isSelected(it)
 }
 
-adapter.register<String>(R.layout.item_text) { str, view, selected, position ->
-    view.text_view.text = str
-    view.switch.selected = selected
-}
-
-adapter.add(PictureItem(R.drawable.image))
-adapter.add("Title")
-
-adapter.selectItem("Title")
+adapter.add("Example")
+selection.selectItem("Example")
 ```
 
 # API Documentation
