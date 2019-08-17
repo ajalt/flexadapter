@@ -2,20 +2,20 @@ apply plugin: 'com.github.ben-manes.versions'
 
 buildscript {
     ext.versions = [
-            minSdk        : 14,
-            targetSdk     : 27,
-            compileSdk    : 27,
-            buildTools    : '27.0.3',
+            minSdk        : 19,
+            targetSdk     : 28,
+            compileSdk    : 28,
+            buildTools    : '28.0.0',
 
-            kotlin        : '1.2.40',
-            supportLibrary: '27.1.1',
+            kotlin        : '1.3.41',
+            supportLibrary: '28.0.0',
     ]
 
     ext.deps = [
             buildscript        : [
                     kotlin  : "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}",
-                    dokka   : 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.16',
-                    versions: 'com.github.ben-manes:gradle-versions-plugin:0.17.0',
+                    dokka   : 'org.jetbrains.dokka:dokka-android-gradle-plugin:0.9.18',
+                    versions: 'com.github.ben-manes:gradle-versions-plugin:0.22.0',
             ],
 
             // library dependencies
@@ -42,7 +42,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.1'
+        classpath 'com.android.tools.build:gradle:3.4.2'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath deps.buildscript.versions
     }
