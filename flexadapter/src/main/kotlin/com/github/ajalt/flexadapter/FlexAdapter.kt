@@ -32,10 +32,14 @@ internal interface FlexAdapterItemAttrs {
  */
 typealias FlexAdapterViewBinder<T> = (T, View, Int) -> Unit
 
-private data class ItemAttrs(@LayoutRes val layout: Int, override val span: Int,
-                             override val swipeDirs: Int, override val dragDirs: Int,
-                             override val stableId: Long,
-                             val viewBinder: (Any, View, Int) -> Unit) : FlexAdapterItemAttrs
+private data class ItemAttrs(
+        @LayoutRes val layout: Int,
+        override val span: Int,
+        override val swipeDirs: Int,
+        override val dragDirs: Int,
+        override val stableId: Long,
+        val viewBinder: (Any, View, Int) -> Unit
+) : FlexAdapterItemAttrs
 
 /**
  * A [RecyclerView.Adapter] that handles multiple item layouts with per-item swipe, drag, and span
@@ -295,7 +299,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      *
      * You may omit the [viewBinder] if there is no information to bind (for example, inserting a divider).
      *
-     * @param T The type to register.
+     * @param U The type to register. Must be [T] or a subclass of [T].
      * @param layout The layout resource to use for items of this type.
      * @param span The span to use for items of this type when the layout manager supports it.
      * @param swipeDirs The swipe direction flags to use with the [ItemTouchHelper].
@@ -303,21 +307,25 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
      * @param viewType If given, the value to return from [FlexAdapter.getItemViewType]. This is usually not necessary.
      * @param viewBinder The implementation of [RecyclerView.Adapter.bindViewHolder] for items of this type.
      */
-    inline fun <reified T> register(@LayoutRes layout: Int, span: Int = 1, swipeDirs: Int = 0,
-                                    dragDirs: Int = 0, viewType: Int? = null,
-                                    crossinline viewBinder: FlexAdapterViewBinder<T> = { _, _, _ -> }) {
-        registerType(T::class.java, layout, span, swipeDirs, dragDirs, viewType) { any, v, i -> viewBinder(any as T, v, i) }
+    inline fun <reified U: T> register(
+            @LayoutRes layout: Int,
+            span: Int = 1,
+            swipeDirs: Int = 0,
+            dragDirs: Int = 0,
+            viewType: Int? = null,
+            crossinline viewBinder: FlexAdapterViewBinder<T> = { _, _, _ -> }
+    ) {
+        registerType(U::class.java, layout, span, swipeDirs, dragDirs, viewType) { any, v, i -> viewBinder(any as U, v, i) }
     }
 
     @Synchronized
     private fun recordItems(range: IntRange) {
         for (i in range) {
-            val item = items[i]
             // Calling attrsOf here has two side effects: First, if the item is a subclass of a
             // registered base class, it ensures that the subclass item type is recorded. Second, if
             // the item hans't been registered, it will throw so that we fail when an item is added
             // instead of bound.
-            when (item) {
+            when (val item = items[i]) {
                 is FlexAdapterItem<*> -> recordItemType(item)
                 else -> attrsOf(item)
             }
@@ -365,8 +373,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
     /** @suppress */
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val item = items[position]
-        val attrs = attrsOf(item)
-        when (attrs) {
+        when (val attrs = attrsOf(item)) {
             is FlexAdapterItem<*> -> attrs.bindErasedViewHolder(holder, position)
             is ItemAttrs -> attrs.viewBinder(item, holder.itemView, position)
             else -> throw IllegalStateException("Cannot bind to $item")
