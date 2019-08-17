@@ -32,7 +32,6 @@ dependencies {
     implementation project(':flexadapter')
 
     implementation deps.supportDesign
-    implementation deps.supportCards
     implementation deps.supportRecyclerView
     implementation deps.kotlinStdlib
 }

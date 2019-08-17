@@ -31,7 +31,6 @@ buildscript {
 
             // sample dependencies
             supportDesign      : "com.android.support:design:${versions.supportLibrary}",
-            supportCards       : "com.android.support:cardview-v7:${versions.supportLibrary}",
             supportAnnotations : "com.android.support:support-annotations:${versions.supportLibrary}"
     ]
     repositories {
