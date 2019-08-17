@@ -2,10 +2,10 @@ package com.github.ajalt.flexadapter
 
 import android.view.View
 import android.widget.FrameLayout
-import com.nhaarman.mockito_kotlin.mock
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.verifyNoMoreInteractions
-import org.assertj.core.api.Java6Assertions.assertThat
+import androidx.test.core.app.ApplicationProvider
+import com.nhaarman.mockitokotlin2.*
+import io.kotlintest.shouldBe
+import io.kotlintest.shouldNotBe
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
@@ -18,9 +18,9 @@ private class C : FlexAdapterExtensionItem(0) {
     override fun bindItemView(itemView: View, position: Int) = Unit
 }
 
-abstract class I
-open class O : I()
-class O2 : O()
+private abstract class I
+private open class O : I()
+private class O2 : O()
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -32,9 +32,9 @@ class FlexAdapterTest {
 
     private fun bindViewAt(adapter: FlexAdapter<*>, i: Int) {
         val viewHolder = adapter.onCreateViewHolder(
-                FrameLayout(RuntimeEnvironment.application),
+                FrameLayout(ApplicationProvider.getApplicationContext()),
                 adapter.getItemViewType(i))
-        assertThat(viewHolder).isNotNull()
+        viewHolder shouldNotBe null
         adapter.bindViewHolder(viewHolder, i)
     }
 
@@ -108,7 +108,7 @@ class FlexAdapterTest {
         val adapter = FlexAdapter<String>()
         adapter.register<String>(layout, viewType = 123)
         adapter.items.add("x")
-        assertThat(adapter.getItemViewType(0)).isEqualTo(123)
+        adapter.getItemViewType(0) shouldBe 123
     }
 
     @Test
@@ -117,7 +117,7 @@ class FlexAdapterTest {
         adapter.register<String>(layout, viewType = 123)
         adapter.items.add("x")
         adapter.register<String>(layout, viewType = 789)
-        assertThat(adapter.getItemViewType(0)).isEqualTo(789)
+        adapter.getItemViewType(0) shouldBe 789
     }
 
     @Test
@@ -126,7 +126,7 @@ class FlexAdapterTest {
         adapter.register<I>(layout, viewType = 123)
         adapter.items.add(O())
         adapter.register<I>(layout, viewType = 789)
-        assertThat(adapter.getItemViewType(0)).isEqualTo(789)
+        adapter.getItemViewType(0) shouldBe 789
     }
 }
 

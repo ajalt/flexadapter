@@ -261,7 +261,7 @@ open class FlexAdapter<T : Any>(private val registerAutomatically: Boolean = tru
                 items.removeAt(i)
             }
 
-            override fun clearView(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?) {
+            override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
                 super.clearView(recyclerView, viewHolder)
 
                 if (callDragListenerOnDropOnly && dragFrom >= 0 && dragTo >= 0 && dragFrom != dragTo) {

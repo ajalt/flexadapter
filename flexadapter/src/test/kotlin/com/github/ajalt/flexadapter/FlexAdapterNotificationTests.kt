@@ -3,7 +3,7 @@ package com.github.ajalt.flexadapter
 import android.os.Build
 import android.support.annotation.RequiresApi
 import android.support.v7.widget.RecyclerView
-import com.nhaarman.mockito_kotlin.*
+import com.nhaarman.mockitokotlin2.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -12,10 +12,10 @@ import org.robolectric.annotation.Config
 import java.util.*
 
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE, sdk = intArrayOf(25))
+@Config(manifest = Config.NONE, sdk = [25])
 class FlexAdapterNotificationTests {
-    val adapter = FlexAdapter<Int>()
-    val observer = mock<RecyclerView.AdapterDataObserver>()
+    private val adapter = FlexAdapter<Int>()
+    private val observer = mock<RecyclerView.AdapterDataObserver>()
 
     @Before
     fun setup() {

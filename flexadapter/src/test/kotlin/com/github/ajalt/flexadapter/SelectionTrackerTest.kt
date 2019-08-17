@@ -1,8 +1,12 @@
 package com.github.ajalt.flexadapter
 
 import android.view.View
-import org.assertj.core.api.Java6Assertions.assertThat
-import org.assertj.core.api.SoftAssertions
+import io.kotlintest.assertSoftly
+import io.kotlintest.matchers.beEmpty
+import io.kotlintest.matchers.collections.shouldContainExactly
+import io.kotlintest.matchers.collections.shouldContainExactlyInAnyOrder
+import io.kotlintest.should
+import io.kotlintest.shouldBe
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -27,17 +31,15 @@ class SelectionTrackerTest {
     private val testItem = TestItem("regularItem")
 
     private fun assertTrackedValues(vararg items: Any) {
-        with(SoftAssertions()) {
-            assertThat(tracker.selectedItemCount).isEqualTo(items.size)
-            if (items.isEmpty()) {
-                assertThat(tracker.selectedItems()).isEmpty()
-            } else {
-                assertThat(tracker.selectedItems()).containsOnly(*items)
-                for (item in items) {
-                    assertThat(tracker.isSelected(item))
-                }
+        assertSoftly {
+            tracker.selectedItemCount shouldBe items.size
+            tracker.selectedItems().shouldContainExactlyInAnyOrder(*items)
+            for (item in items) {
+                tracker.isSelected(item) shouldBe true
             }
-            assertAll()
+            for (item in adapter.items) {
+                tracker.isSelected(item) shouldBe (item in items)
+            }
         }
     }
 
